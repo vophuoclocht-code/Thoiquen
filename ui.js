@@ -13,12 +13,13 @@ function rHabits(){const hs=D.habits.filter(h=>!h.arch),n=new Date(),nm=D.cfg.na
   let h='<h1 class="h-date">'+DOW[n.getDay()]+', '+n.getDate()+' tháng '+(n.getMonth()+1)+'</h1>';
   h+='<div class="today"><div class="today-t"><span>'+done+'/'+hs.length+' thói quen xong</span><b>'+Math.round(p*100)+'%</b></div><div class="bar"><i style="width:'+(p*100).toFixed(1)+'%"></i></div></div>';
   if(!hs.length)h+='<div class="empty">Chưa có thói quen nào.<br>Vào tab Quản lý để thêm thói quen đầu tiên.</div>';
-  for(const x of hs){const s=stat(x),u=x.unit?' '+esc(x.unit):'',nx=s.lv<4?nm[s.lv]:'★';
-    h+='<article class="habit" data-lv="'+s.lv+'" data-id="'+x.id+'"><div class="h-ic">'+ic(x.icon,'l')+'</div>'+
-    '<div class="h-main"><div class="h-name">'+esc(x.name)+'</div><div class="h-meta">Hôm nay <b>'+s.today.v+(x.goal>0?'/'+x.goal:'')+u+'</b>'+(s.full?' · đủ hôm nay':'')+'</div></div>'+
+  for(const x of hs){const s=stat(x),u=x.unit?' '+esc(x.unit):'',len=String(s.today.v).length;
+    /* Chạm vào cả khung để cộng. Trái: huy hiệu cấp. Giữa: icon + tên. Phải: số lần hôm nay thật to. Dưới: thanh lên cấp */
+    h+='<article class="habit'+(s.full?' is-full':'')+'" data-lv="'+s.lv+'" data-id="'+x.id+'">'+
     '<div class="badge">'+badge(s.lv)+'<span>'+esc(nm[s.lv-1])+'</span></div>'+
-    '<div class="pg"><div class="pg-t"><span>'+esc(nm[s.lv-1])+' → '+esc(nx)+'</span><b>'+s.into+'/'+s.th+(s.stars?' · '+'★'.repeat(s.stars):'')+'</b></div><div class="wave"><i style="--pct:'+(s.into/s.th*100).toFixed(1)+'%"></i></div></div>'+
-    '<button class="add" data-add aria-label="Ghi nhận">'+ic('ui-plus','l')+'</button></article>'}
+    '<div class="h-main"><div class="h-name">'+ic(x.icon,'s')+'<span>'+esc(x.name)+'</span></div><div class="h-sub2">'+(s.full?'Đủ hôm nay':(x.goal>0?'Mục tiêu '+x.goal+u:'Không đặt mục tiêu'))+'</div></div>'+
+    '<div class="count"><b class="cnum'+(len>=4?' xl':len==3?' l':'')+'">'+s.today.v+'</b><span>'+(x.goal>0?'/ '+x.goal+u:(x.unit?esc(x.unit):'hôm nay'))+'</span></div>'+
+    '<div class="pg"><div class="wave"><i style="--pct:'+(s.into/s.th*100).toFixed(1)+'%"></i></div><em class="pgn">'+s.into+'/'+s.th+(s.stars?' ★'+s.stars:'')+'</em></div></article>'}
   return h}
 /* Mỗi cấp một số điểm riêng do người dùng nhập: lvs = [cấp1→2, cấp2→3, cấp3→4, mỗi ★] */
 function xpChips(L){return L.map((v,k)=>'<span class="xp" style="background:'+LV[k]+';color:'+(k==3?'#2a0a55':'#fff')+'">'+(k<3?(k+1)+'→'+(k+2):'mỗi ★')+' <b>'+v+'</b></span>').join('')}

@@ -11,21 +11,24 @@ function confirmBox(msg,yes){sheet('<h2 class="h-date">'+msg+'</h2><div style="d
 /* Hoàn tác 5 giây, vòng đếm ngược */
 function showUndo(fn){undoFn=fn;const b=$('#undo');b.hidden=false;b.classList.remove('run');void b.offsetWidth;b.classList.add('run');clearTimeout(undoT);undoT=setTimeout(()=>{b.hidden=true;undoFn=null},5000)}
 /* Hiệu ứng thăng cấp (xếp hàng, chạy lần lượt) */
-function queueFx(id,from,to){fxQ=fxQ.then(()=>new Promise(res=>{const c=document.querySelector('.habit[data-id="'+id+'"]');if(!c||D.cfg.reduce||matchMedia('(prefers-reduced-motion:reduce)').matches){res();return}
-  c.dataset.lv=from;c.classList.add('is-leveling');c.style.setProperty('--from',LV[from-1]);c.style.setProperty('--to',LV[to-1]);c.style.setProperty('--ngrad','var(--grad'+to+')');
-  let h='<div class="fx-ring"></div><div class="fx-bg"></div><div class="fx-wave"><i></i><i></i><i></i></div><div class="fx-label">Thăng cấp: '+esc(D.cfg.names[to-1])+'</div>';
-  for(let i=0;i<5;i++)h+='<i class="fx-spark" style="left:'+(20+Math.random()*60)+'%;animation-delay:'+(i*.2)+'s"></i>';
-  const w=document.createElement('div');w.innerHTML=h;const els=[...w.children];els.forEach(e=>c.appendChild(e));vib([20,50,90,50,20]);
-  setTimeout(()=>{c.dataset.lv=to},1700);setTimeout(()=>{els.forEach(e=>e.remove());c.classList.remove('is-leveling');if(cur==='habits')render();res()},2400)}))}
+function queueFx(id,from,to){fxQ=fxQ.then(()=>new Promise(res=>{const c=document.querySelector('.habit[data-id="'+id+'"]');
+  if(!c||D.cfg.reduce||matchMedia('(prefers-reduced-motion:reduce)').matches){res();return}
+  c.dataset.lv=from;c.classList.add('is-leveling');c.style.setProperty('--ngrad','var(--grad'+to+')');
+  const mk=(cls,t)=>{const e=document.createElement('div');e.className=cls;if(t)e.innerHTML=t;c.appendChild(e);return e};
+  const els=[mk('fx-bg'),mk('fx-wave','<i></i><i></i><i></i>'),mk('fx-label')];els[2].textContent='Thăng cấp: '+D.cfg.names[to-1];vib([20,50,90,50,20]);
+  setTimeout(()=>{c.dataset.lv=to;const b=c.querySelector('.badge');if(b)b.innerHTML=badge(to)+'<span>'+esc(D.cfg.names[to-1])+'</span>'},1000);
+  setTimeout(()=>{els.forEach(e=>e.remove());c.classList.remove('is-leveling');if(cur==='habits')render();res()},2100)}))}
 function doAdd(id){const h=D.habits.find(x=>x.id===id);if(!h)return;const b=stat(h),l=addLog(h,h.kind==='amount'?h.step:1);
-  if(!l){toast('Đã đủ hôm nay');return}vib(15);const a=stat(h);render();showUndo(()=>{removeLog(l.id);render()});if(a.lv>b.lv)queueFx(id,b.lv,a.lv)}
+  if(!l){toast('Đã đủ hôm nay');return}vib(15);const a=stat(h);render();const c=document.querySelector('.habit[data-id="'+id+'"]');if(c){const p=document.createElement('i');p.className='pop';p.textContent='+'+l.v;c.appendChild(p);setTimeout(()=>p.remove(),700)}showUndo(()=>{removeLog(l.id);render()});if(a.lv>b.lv)queueFx(id,b.lv,a.lv)}
 function doMinus(id){const h=D.habits.find(x=>x.id===id),l=h&&lastToday(h);if(!l){toast('Hôm nay chưa có gì để trừ');return}removeLog(l.id);vib(15);render();showUndo(()=>{D.log.push(l);save();render()})}
-/* Giữ nút cộng 0,55 giây = trừ; bấm nhanh = cộng */
-let pt=null,longHit=false;
-document.addEventListener('pointerdown',e=>{const a=e.target.closest('[data-add]');if(!a)return;longHit=false;const id=a.closest('.habit').dataset.id;pt=setTimeout(()=>{longHit=true;pt=null;doMinus(id)},550)});
-document.addEventListener('pointerup',e=>{const a=e.target.closest('[data-add]');if(pt){clearTimeout(pt);pt=null;if(a)doAdd(a.closest('.habit').dataset.id)}});
-document.addEventListener('pointercancel',()=>{clearTimeout(pt);pt=null});
-document.addEventListener('contextmenu',e=>{if(e.target.closest('[data-add]'))e.preventDefault()});
+/* Chạm khung = cộng. Giữ 0,55 giây = trừ. Kéo/cuộn quá 10px thì hủy */
+let pt=null,dId=null,sx=0,sy=0,moved=false,longHit=false;
+document.addEventListener('pointerdown',e=>{const c=e.target.closest('.habit');if(!c)return;dId=c.dataset.id;sx=e.clientX;sy=e.clientY;moved=false;longHit=false;
+  pt=setTimeout(()=>{pt=null;if(!moved){longHit=true;doMinus(dId)}},550)});
+document.addEventListener('pointermove',e=>{if(dId&&!moved&&Math.hypot(e.clientX-sx,e.clientY-sy)>10){moved=true;clearTimeout(pt);pt=null}});
+document.addEventListener('pointerup',()=>{clearTimeout(pt);pt=null;const id=dId;dId=null;if(id&&!moved&&!longHit)doAdd(id)});
+document.addEventListener('pointercancel',()=>{clearTimeout(pt);pt=null;dId=null});
+document.addEventListener('contextmenu',e=>{if(e.target.closest('.habit'))e.preventDefault()});
 document.addEventListener('click',e=>{const t=e.target,q=s=>t.closest(s);let m;
   if(m=q('[data-tab]'))go(m.dataset.tab);
   else if(m=q('.seg button')){const g=m.parentNode;g.querySelectorAll('button').forEach(b=>b.classList.toggle('is-on',b===m));if(g.dataset.seg==='kind')$('#fform').dataset.kind=m.dataset.v}
@@ -53,8 +56,6 @@ document.addEventListener('change',e=>{const t=e.target;
   else if(t.dataset.import!==undefined&&t.files[0]){const r=new FileReader();r.onload=()=>{const err=importJSON(r.result);err?toast(err):(toast('Đã nhập dữ liệu'),render())};r.readAsText(t.files[0])}});
 /* Khởi động */
 load();document.body.classList.toggle('reduce-motion',D.cfg.reduce);go('habits');
-const left=D.habits.filter(h=>!h.arch&&prog(h)<1).length;
-if(left){const r=$('#remind');r.textContent='Hôm nay còn '+left+' thói quen';r.hidden=false;setTimeout(()=>r.hidden=true,4000)}
 setTimeout(()=>{const s=$('#splash');if(s)s.remove()},800);
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js');
