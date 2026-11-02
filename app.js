@@ -12,7 +12,7 @@ function confirmBox(msg,yes){sheet('<h2 class="h-date">'+msg+'</h2><div style="d
 function showUndo(fn){undoFn=fn;const b=$('#undo');b.hidden=false;b.classList.remove('run');void b.offsetWidth;b.classList.add('run');clearTimeout(undoT);undoT=setTimeout(()=>{b.hidden=true;undoFn=null},5000)}
 /* Hiệu ứng thăng cấp (xếp hàng, chạy lần lượt) */
 function queueFx(id,from,to){fxQ=fxQ.then(()=>new Promise(res=>{const c=document.querySelector('.habit[data-id="'+id+'"]');if(!c||D.cfg.reduce||matchMedia('(prefers-reduced-motion:reduce)').matches){res();return}
-  c.dataset.lv=from;c.classList.add('is-leveling');c.style.setProperty('--from',LV[from-1]);c.style.setProperty('--to',LV[to-1]);c.style.setProperty('--n1',LV[to-1]);c.style.setProperty('--n2',LV2[to-1]);
+  c.dataset.lv=from;c.classList.add('is-leveling');c.style.setProperty('--from',LV[from-1]);c.style.setProperty('--to',LV[to-1]);c.style.setProperty('--ngrad','var(--grad'+to+')');
   let h='<div class="fx-ring"></div><div class="fx-bg"></div><div class="fx-wave"><i></i><i></i><i></i></div><div class="fx-label">Thăng cấp: '+esc(D.cfg.names[to-1])+'</div>';
   for(let i=0;i<5;i++)h+='<i class="fx-spark" style="left:'+(20+Math.random()*60)+'%;animation-delay:'+(i*.2)+'s"></i>';
   const w=document.createElement('div');w.innerHTML=h;const els=[...w.children];els.forEach(e=>c.appendChild(e));vib([20,50,90,50,20]);
@@ -28,16 +28,16 @@ document.addEventListener('pointercancel',()=>{clearTimeout(pt);pt=null});
 document.addEventListener('contextmenu',e=>{if(e.target.closest('[data-add]'))e.preventDefault()});
 document.addEventListener('click',e=>{const t=e.target,q=s=>t.closest(s);let m;
   if(m=q('[data-tab]'))go(m.dataset.tab);
+  else if(m=q('.seg button')){const g=m.parentNode;g.querySelectorAll('button').forEach(b=>b.classList.toggle('is-on',b===m));if(g.dataset.seg==='kind')$('#fform').dataset.kind=m.dataset.v}
   else if(q('[data-close]'))closeSheet();
   else if(q('[data-new]')){selIcon='h-star';sheet(formHtml());updateXp()}
   else if(m=q('[data-edit]')){const x=D.habits.find(h=>h.id===m.dataset.edit);selIcon=x.icon;sheet(formHtml(x));updateXp()}
   else if(m=q('[data-ic]')){selIcon=m.dataset.ic;document.querySelectorAll('[data-ic]').forEach(b=>b.classList.toggle('is-on',b===m))}
-  else if(q('[data-th2]')){e.preventDefault();$('#f-th').value=2;$('#f-inc').value=0;updateXp()}
-  else if(m=q('[data-tpl]')){const t=TPL[+m.dataset.tpl];selIcon=t.icon;$('#f-name').value=t.name;$('#f-kind').value=t.kind;$('#f-unit').value=t.unit;$('#f-step').value=t.step;$('#f-goal').value=t.goal;$('#f-mode').value=t.mode;$('#f-limit').value=t.limit;$('#f-th').value=t.th;$('#f-inc').value=t.inc;
-    document.querySelectorAll('[data-ic]').forEach(b=>b.classList.toggle('is-on',b.dataset.ic===selIcon));updateXp()}
-  else if(m=q('[data-save]')){const name=$('#f-name').value.trim(),n=(id,d)=>{const v=Math.floor(+$('#'+id).value);return isNaN(v)||v<0?d:v};
+  else if(q('[data-th2]')){e.preventDefault();[0,1,2,3].forEach(i=>$('#f-l'+i).value=2);updateXp()}
+  else if(m=q('[data-save]')){const name=$('#f-name').value.trim(),n=(id,d)=>{const v=Math.floor(+$('#'+id).value);return isNaN(v)||v<0?d:v},sg=k=>document.querySelector('.seg[data-seg="'+k+'"] .is-on').dataset.v;
     if(!name){toast('Hãy nhập tên thói quen');return}
-    const o={name,icon:selIcon,kind:$('#f-kind').value,unit:$('#f-unit').value.trim(),step:Math.max(1,n('f-step',1)),goal:n('f-goal',1),mode:$('#f-mode').value,limit:n('f-limit',0),th:Math.max(1,n('f-th',10)),inc:n('f-inc',0)};
+    const lvs=[0,1,2,3].map(i=>Math.max(1,n('f-l'+i,10))),kind=sg('kind');
+    const o={name,icon:selIcon,kind,unit:$('#f-unit').value.trim(),step:kind==='count'?1:Math.max(1,n('f-step',1)),goal:n('f-goal',1),mode:sg('mode'),limit:n('f-limit',0),lvs,th:lvs[0]};
     const x=D.habits.find(h=>h.id===m.dataset.save);if(x)Object.assign(x,o);else D.habits.push(Object.assign({id:uid()},o));save();closeSheet();render()}
   else if(m=q('[data-move]')){const p=m.dataset.move.split('|');moveHabit(p[0],p[1]);render()}
   else if(m=q('[data-arch]')){const x=D.habits.find(h=>h.id===m.dataset.arch);x.arch=!x.arch;save();render();toast(x.arch?'Đã lưu trữ':'Đã khôi phục')}
@@ -59,4 +59,4 @@ setTimeout(()=>{const s=$('#splash');if(s)s.remove()},800);
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js');
 
-document.addEventListener('input',e=>{if(e.target.id==='f-th'||e.target.id==='f-inc')updateXp()});
+document.addEventListener('input',e=>{if(/^f-l\d$/.test(e.target.id))updateXp()});

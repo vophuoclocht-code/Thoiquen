@@ -15,7 +15,8 @@ function perDay(h){const m={};for(const l of D.log)if(l.h===h.id){const k=dayKey
 /* Điểm trong 1 ngày: mode log=mỗi lần 1đ, day=đạt mục tiêu 1đ, amount=theo tổng lượng; có trần theo limit */
 function dayPts(h,e){if(!e)return 0;let p=h.mode==='amount'?e.v:h.mode==='day'?(e.v>=goalOf(h)?1:0):e.n;if(h.limit>0)p=Math.min(p,h.limit);return Math.floor(p)}
 const goalOf=h=>h.goal>0?h.goal:1; /* mục tiêu 0 = không đặt: làm 1 lần là xong */
-const need=(h,k)=>Math.max(1,(h.th||10)+k*(h.inc||0)); /* điểm cần cho bước thứ k (tăng dần như XP) */
+const lvsOf=h=>h.lvs&&h.lvs.length===4?h.lvs:[0,1,2,3].map(k=>Math.max(1,(h.th||10)+k*(h.inc||0)));
+const need=(h,k)=>Math.max(1,lvsOf(h)[Math.min(k,3)]); /* điểm cần cho bước thứ k */
 function stat(h){const m=perDay(h),k=dayKey();let pts=0;for(const d in m)pts+=dayPts(h,m[d]);
   let steps=0,rem=pts;while(steps<999&&rem>=need(h,steps)){rem-=need(h,steps);steps++}
   const t=m[k]||{n:0,v:0},tp=dayPts(h,t);

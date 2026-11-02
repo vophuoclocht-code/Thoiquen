@@ -11,7 +11,7 @@
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
   --tab-h:64px;
   --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;
-  --serif:Georgia,"Noto Serif","Times New Roman",serif;
+  --serif:"Noto Serif","Times New Roman",Georgia,serif; /* Georgia làm vỡ dấu tiếng Việt nên để cuối */
   --grad-brand:linear-gradient(135deg,#c026f0,#6a14b8 55%,#3d0a80);
   --grad-gold:linear-gradient(135deg,#fff0b3,#ffc457 55%,#ff8a3d);
 }
@@ -218,3 +218,48 @@ body.reduce-motion *{animation-duration:.01ms!important}
 .mg-btns button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:.88rem;color:var(--p)}
 .mg-btns .btn-danger{color:#c0262d}
 .fsec{font:600 1.05rem var(--serif);margin:var(--s5) 0 var(--s3);color:var(--p)}
+
+/* ===== v5: khung thói quen mới (tím → vàng), thanh tiến độ nổi, form gọn ===== */
+:root{
+ --grad1:linear-gradient(90deg,#3a0d7c 0,#3a0d7c 40%,#b8368f 68%,#f29a2e 86%,#ffc93a 100%);
+ --grad2:linear-gradient(90deg,#6a14b8 0,#6a14b8 40%,#c0409f 68%,#ffa63c 86%,#ffd34d 100%);
+ --grad3:linear-gradient(90deg,#a43ee6 0,#a43ee6 40%,#e257b8 68%,#ffb84a 86%,#ffe066 100%);
+ --grad4:linear-gradient(90deg,#e3a6ff 0,#e3a6ff 40%,#ffa6d5 68%,#ffd27a 86%,#fff3a8 100%)}
+.habit{display:grid;grid-template-columns:52px minmax(0,1fr) 76px;grid-template-areas:"ic main bd" "pg pg ad";gap:14px 12px;align-items:center;padding:16px;
+  text-shadow:0 1px 2px rgba(30,0,70,.45)}
+.habit[data-lv="1"]{background:var(--grad1)}.habit[data-lv="2"]{background:var(--grad2)}
+.habit[data-lv="3"]{background:var(--grad3)}.habit[data-lv="4"]{background:var(--grad4);text-shadow:none}
+.habit .h-ic{grid-area:ic;width:52px;height:52px;background:rgba(20,0,50,.28)}
+.habit[data-lv="4"] .h-ic{background:rgba(42,10,85,.14)}
+.habit .h-main{grid-area:main;min-width:0}
+.habit .h-name{font-size:1.1rem;font-weight:700;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.habit .h-meta{margin-top:3px;font-size:.85rem}
+.habit .badge{grid-area:bd;width:76px;padding:6px 4px 5px;border-radius:16px;background:rgba(32,6,72,.84);text-shadow:none;box-shadow:0 2px 10px rgba(32,6,72,.35)}
+.habit .badge svg{width:46px;height:40px;margin:0 auto}
+.habit .badge span,.habit[data-lv="3"] .badge span{color:#fff0b3!important;font:italic .66rem/1.2 var(--serif)}
+.habit .pg{grid-area:pg;min-width:0}
+.pg-t{display:flex;justify-content:space-between;gap:8px;font-size:.82rem;margin-bottom:6px;color:var(--fg)}
+.pg-t span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.habit .wave{height:12px;margin:0;border-radius:12px;background:rgba(24,4,56,.58);box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
+.habit[data-lv="4"] .wave{background:rgba(24,4,56,.5)}
+.habit .wave i{border-radius:12px;background:linear-gradient(90deg,#fff6c9,#ffd24d);box-shadow:0 0 8px rgba(255,226,120,.95);min-width:0}
+.habit .add{grid-area:ad;justify-self:center;width:64px;height:64px;background:#2a0a55;color:#ffd24d;box-shadow:0 4px 14px rgba(32,6,72,.45),0 0 0 3px rgba(255,255,255,.55);text-shadow:none}
+.habit.is-full .add{background:#2a0a55;opacity:.55;color:#ffd24d}
+.fx-bg{background:var(--ngrad);animation:fade 1.4s ease-in-out .2s forwards}
+.fx-wave{top:14px;right:16px;width:76px;height:52px}
+.fx-label,.badge span{font-family:var(--serif)}
+.today .bar{background:#e4d8f5;box-shadow:inset 0 0 0 1px #d3c2ee;height:12px}
+.bar i{background:linear-gradient(90deg,#6a14b8,#c026f0 40%,#ff8a3d 75%,#ffd34d)}
+.mg-ic{background:var(--grad1)!important;color:#fff}.mg-ic[data-lv="2"]{background:var(--grad2)!important}
+.mg-ic[data-lv="3"]{background:var(--grad3)!important}.mg-ic[data-lv="4"]{background:var(--grad4)!important;color:#2a0a55}
+/* Form */
+.fcard{background:#fff;border-radius:var(--r-m);padding:14px;margin-bottom:12px;box-shadow:var(--sh-s)}
+.fcard .fsec{margin:0 0 12px;font-size:1rem}
+.fcard .field:last-child{margin-bottom:0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.g2 .field{margin-bottom:0}
+.f[data-kind="count"] .only-amount{display:none}.f[data-kind="count"] .g2:first-of-type{grid-template-columns:1fr}
+.seg{display:flex;background:#efe6fb;border-radius:14px;padding:3px;gap:3px}
+.seg button{flex:1;min-height:42px;border-radius:11px;font-size:.9rem;color:var(--ink2)}
+.seg .is-on{background:#fff;color:var(--p);font-weight:600;box-shadow:var(--sh-s)}
+.hint{display:block;margin-top:8px;color:var(--ink2);font-size:.8rem}
+.fsave{position:sticky;bottom:-8px;padding:10px 0 4px;background:linear-gradient(rgba(250,247,255,0),var(--bg) 35%)}
