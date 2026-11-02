@@ -346,3 +346,25 @@ body.reduce-motion *{animation-duration:.01ms!important}
 .fx-wave{width:72px;height:72px}
 .habit .badge span,.habit[data-lv="3"] .badge span{display:flex;align-items:center;justify-content:center;min-height:2.3em;margin-top:2px;padding:0 2px;
   white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;text-align:center;font-size:.7rem;line-height:1.15}
+
+/* ===== v9: tên cấp 1 dòng; nền huy hiệu cùng tông màu khung nhưng đậm hơn + viền sáng để tách biệt ===== */
+.habit{grid-template-columns:80px minmax(0,1fr) auto}
+.habit[data-lv="1"]{--t0:#3B0F8C;--t1:#5B21B6;--ring:#FFD24D}
+.habit[data-lv="2"]{--t0:#6B0F6E;--t1:#A31D6E;--ring:#FFE08A}
+.habit[data-lv="3"]{--t0:#9A3412;--t1:#C2410C;--ring:#FFE8B0}
+.habit[data-lv="4"]{--t0:#B45309;--t1:#D97706;--ring:#FFF6D6}
+.habit .badge{width:80px;padding:6px 2px 6px;background:linear-gradient(160deg,var(--t0),var(--t1));color:var(--ring);
+  border:1.5px solid rgba(255,255,255,.6);box-shadow:0 4px 12px rgba(30,0,60,.3),inset 0 1px 0 rgba(255,255,255,.3)}
+.fx-wave{width:80px;height:80px}
+.habit .badge span,.habit[data-lv="3"] .badge span{display:block;min-height:0;margin-top:3px;padding:0;white-space:nowrap;overflow:visible;
+  text-overflow:clip;text-align:center;line-height:1.2;color:#fff!important}
+
+/* ===== v9: huy hiệu cùng tông màu khung nhưng tách biệt; tên cấp 1 dòng ===== */
+.habit[data-lv="1"]{--tile:linear-gradient(160deg,#4a1a9c,#2e0f6b)}
+.habit[data-lv="2"]{--tile:linear-gradient(160deg,#8a1fa0,#5c1170)}
+.habit[data-lv="3"]{--tile:linear-gradient(160deg,#b8470a,#8a3205)}
+.habit[data-lv="4"]{--tile:linear-gradient(160deg,#b8860b,#8a6508)}
+.habit{grid-template-columns:84px minmax(0,1fr) auto}
+.habit .badge{width:84px;background:var(--tile);border:1.5px solid rgba(255,255,255,.65);box-shadow:0 3px 10px rgba(0,0,0,.28);padding:6px 2px 6px}
+.habit .badge span,.habit[data-lv="3"] .badge span{display:block;min-height:0;white-space:nowrap;overflow:hidden;text-overflow:clip;text-align:center;line-height:1.2;margin-top:2px}
+.fx-wave{width:84px;height:84px}

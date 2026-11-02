@@ -16,7 +16,7 @@ function queueFx(id,from,to){fxQ=fxQ.then(()=>new Promise(res=>{const c=document
   c.dataset.lv=from;c.classList.add('is-leveling');c.style.setProperty('--ngrad','var(--grad'+to+')');
   const mk=(cls,t)=>{const e=document.createElement('div');e.className=cls;if(t)e.innerHTML=t;c.appendChild(e);return e};
   const els=[mk('fx-bg'),mk('fx-wave','<i></i><i></i><i></i>'),mk('fx-label')];els[2].textContent='Thăng cấp: '+D.cfg.names[to-1];vib([20,50,90,50,20]);
-  setTimeout(()=>{c.dataset.lv=to;const b=c.querySelector('.badge');if(b)b.innerHTML=badge(to)+'<span>'+esc(D.cfg.names[to-1])+'</span>'},1000);
+  setTimeout(()=>{c.dataset.lv=to;const b=c.querySelector('.badge');if(b)b.innerHTML=badge(to)+bspan(D.cfg.names[to-1])},1000);
   setTimeout(()=>{els.forEach(e=>e.remove());c.classList.remove('is-leveling');if(cur==='habits')render();res()},2100)}))}
 function doAdd(id){const h=D.habits.find(x=>x.id===id);if(!h)return;const b=stat(h),l=addLog(h,h.kind==='amount'?h.step:1);
   if(!l){toast('Đã đủ hôm nay');return}vib(15);const a=stat(h);render();const c=document.querySelector('.habit[data-id="'+id+'"]');if(c){const p=document.createElement('i');p.className='pop';p.textContent='+'+l.v;c.appendChild(p);setTimeout(()=>p.remove(),700)}showUndo(()=>{removeLog(l.id);render()});if(a.lv>b.lv)queueFx(id,b.lv,a.lv)}
@@ -42,7 +42,7 @@ document.addEventListener('click',e=>{const t=e.target,q=s=>t.closest(s);let m;
   else if(m=q('[data-save]')){const name=$('#f-name').value.trim(),n=(id,d)=>{const v=Math.floor(+$('#'+id).value);return isNaN(v)||v<0?d:v},sg=k=>document.querySelector('.seg[data-seg="'+k+'"] .is-on').dataset.v;
     if(!name){toast('Hãy nhập tên thói quen');return}
     const lvs=[0,1,2,3].map(i=>Math.max(1,n('f-l'+i,10))),kind=sg('kind');
-    const o={name,icon:selIcon,kind,unit:$('#f-unit').value.trim(),step:kind==='count'?1:Math.max(1,n('f-step',1)),goal:n('f-goal',1),mode:sg('mode'),limit:n('f-limit',0),lvs,th:lvs[0],note:$('#f-note').value.trim()};
+    const o={name,icon:selIcon,kind,unit:$('#f-unit').value.trim(),step:kind==='count'?1:Math.max(1,n('f-step',1)),goal:n('f-goal',1),mode:sg('mode'),limit:n('f-limit',0),lvs,th:lvs[0]};
     const x=D.habits.find(h=>h.id===m.dataset.save);if(x)Object.assign(x,o);else D.habits.push(Object.assign({id:uid()},o));save();closeSheet();render()}
   else if(m=q('[data-move]')){const p=m.dataset.move.split('|');moveHabit(p[0],p[1]);render()}
   else if(m=q('[data-arch]')){const x=D.habits.find(h=>h.id===m.dataset.arch);x.arch=!x.arch;save();render();toast(x.arch?'Đã lưu trữ':'Đã khôi phục')}

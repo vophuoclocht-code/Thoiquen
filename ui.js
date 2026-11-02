@@ -4,8 +4,9 @@ const DOW=['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ
 const ic=(n,c='')=>'<svg class="ic '+c+'"><use href="#'+n+'"/></svg>';
 const LV=['#6D28D9','#B02ACB','#F97316','#FCD34D'],LV2=['#6a2bc4','#a050e6','#dba0f7','#fbeaff'];
 /* Huy hiệu: số vòng sóng = số cấp, ngôi sao vàng ở tâm */
+const bspan=n=>'<span style="font-size:'+Math.min(.74,Math.max(.5,10.5/[...n].length)).toFixed(2)+'rem">'+esc(n)+'</span>';
 function badge(lv){let r='';for(let i=0;i<lv;i++){const rx=9+i*6,ry=4+i*3.2;
-  r+='<path d="M'+(28-rx)+' 30A'+rx+' '+ry+' 0 0 0 '+(28+rx)+' 30" fill="none" stroke="#ffc457" stroke-width="1.6" stroke-linecap="round" opacity="'+(1-i*.15)+'"/>'}
+  r+='<path d="M'+(28-rx)+' 30A'+rx+' '+ry+' 0 0 0 '+(28+rx)+' 30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="'+(1-i*.15)+'"/>'}
   return '<svg viewBox="0 0 56 48">'+r+'<path d="M28 6c1 6 4 9 9 12-5 3-8 6-9 12-1-6-4-9-9-12 5-3 8-6 9-12z" fill="#fff0b3" stroke="#ff8a3d" stroke-width="1"/></svg>'}
 function ringSvg(p){return '<svg class="ring" viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" fill="none" stroke="#eee7fa" stroke-width="7"/><circle cx="32" cy="32" r="26" fill="none" stroke="url(#gp)" stroke-width="7" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="'+(163.4*(1-p)).toFixed(1)+'" transform="rotate(-90 32 32)"/></svg>'}
 function rHabits(){const hs=D.habits.filter(h=>!h.arch),n=new Date(),nm=D.cfg.names;
@@ -15,7 +16,7 @@ function rHabits(){const hs=D.habits.filter(h=>!h.arch),n=new Date(),nm=D.cfg.na
   for(const x of hs){const s=stat(x),u=x.unit?' '+esc(x.unit):'',len=String(s.today.v).length,sub=s.full?'Đủ hôm nay':(x.goal>0?'Mục tiêu '+x.goal+u:'');
     /* Chạm vào cả khung để cộng. Trái: huy hiệu cấp. Giữa: icon + tên. Phải: số lần hôm nay thật to. Dưới: thanh lên cấp */
     h+='<article class="habit'+(s.full?' is-full':'')+'" data-lv="'+s.lv+'" data-id="'+x.id+'">'+
-    '<div class="badge">'+badge(s.lv)+'<span>'+esc(nm[s.lv-1])+'</span></div>'+
+    '<div class="badge">'+badge(s.lv)+bspan(nm[s.lv-1])+'</div>'+
     '<div class="h-main"><div class="h-name">'+ic(x.icon,'l')+'<span>'+esc(x.name)+'</span></div>'+(sub?'<div class="h-sub2">'+sub+'</div>':'')+'</div>'+
     '<div class="count"><b class="cnum'+(len>=4?' xl':len==3?' l':'')+'">'+s.today.v+'</b><span>'+(x.goal>0?'/ '+x.goal+u:(x.unit?esc(x.unit):'hôm nay'))+'</span></div>'+
     '<div class="pg"><div class="wave"><i style="--pct:'+(s.into/s.th*100).toFixed(1)+'%"></i></div><em class="pgn">'+s.into+'/'+s.th+(s.stars?' ★'+s.stars:'')+'</em></div></article>'}
@@ -27,7 +28,7 @@ const MODE={log:'1 điểm / lần',day:'1 điểm / ngày đạt mục tiêu',a
 function rManage(){const act=D.habits.filter(x=>!x.arch),arc=D.habits.filter(x=>x.arch);
   let h='<h1 class="h-date">Quản lý</h1><p class="h-sub">'+act.length+' thói quen đang theo dõi</p><button class="btn btn-primary" data-new style="width:100%;margin:14px 0">'+ic('ui-plus')+' Thêm thói quen</button>';
   act.forEach(x=>{const s=stat(x);
-    h+='<div class="mg"><div class="mg-top"><span class="mg-ic" data-lv="'+s.lv+'">'+ic(x.icon)+'</span><div class="grow"><div class="t">'+esc(x.name)+'</div>'+(x.note?'<div class="n" style="font-style:italic">“'+esc(x.note)+'”</div>':'')+'<div class="n">'+(x.goal>0?'Mục tiêu '+x.goal+(x.unit?' '+esc(x.unit):'')+'/ngày':'Không đặt mục tiêu')+' · '+MODE[x.mode]+(x.limit>0?' · tối đa '+x.limit+'/ngày':'')+'</div></div>'+
+    h+='<div class="mg"><div class="mg-top"><span class="mg-ic" data-lv="'+s.lv+'">'+ic(x.icon)+'</span><div class="grow"><div class="t">'+esc(x.name)+'</div>'+'<div class="n">'+(x.goal>0?'Mục tiêu '+x.goal+(x.unit?' '+esc(x.unit):'')+'/ngày':'Không đặt mục tiêu')+' · '+MODE[x.mode]+(x.limit>0?' · tối đa '+x.limit+'/ngày':'')+'</div></div>'+
     '<div class="mg-mv"><button data-move="'+x.id+'|top" aria-label="Lên đầu">'+ic('ui-top','s')+'</button><button data-move="'+x.id+'|-1" aria-label="Lên">'+ic('ui-up','s')+'</button><button data-move="'+x.id+'|1" aria-label="Xuống">'+ic('ui-down','s')+'</button></div></div>'+
     '<div class="mg-xp">'+xpChips(lvsOf(x))+'</div><div class="mg-btns"><button data-edit="'+x.id+'">'+ic('ui-edit','s')+' Sửa</button><button data-arch="'+x.id+'">'+ic('ui-archive','s')+' Lưu trữ</button><button class="btn-danger" data-del="'+x.id+'">'+ic('ui-trash','s')+' Xóa</button></div></div>'});
   if(!act.length)h+='<div class="empty">Chưa có thói quen nào. Bấm "Thêm thói quen" và chọn một mẫu dựng sẵn.</div>';
@@ -76,7 +77,7 @@ function formHtml(x){const isNew=!x;x=x||{name:'',icon:'h-star',kind:'count',uni
   const num=(id,l,v,m,s,cls)=>'<div class="field '+(cls||'')+'"><label for="'+id+'">'+l+'</label><input type="number" inputmode="numeric" id="'+id+'" min="'+m+'" value="'+v+'">'+(s?'<small>'+s+'</small>':'')+'</div>';
   const lab=['Thăng cấp 1: '+nm[0]+' → '+nm[1],'Thăng cấp 2: '+nm[1]+' → '+nm[2],'Thăng cấp 3: '+nm[2]+' → '+nm[3],'Mỗi ★ sau '+nm[3]];
   return '<div class="f" id="fform" data-kind="'+x.kind+'"><h2 class="h-date">'+(x.id?'Sửa':'Thêm')+' thói quen</h2>'+
-  '<div class="fcard"><h3 class="fsec">Thông tin</h3><div class="field"><label for="f-name">Tên</label><input type="text" id="f-name" maxlength="40" value="'+esc(x.name)+'"></div>'+'<div class="field"><label for="f-note">Vì sao tôi làm việc này (không bắt buộc)</label><input type="text" id="f-note" maxlength="80" value="'+esc(x.note||'')+'"></div>'+
+  '<div class="fcard"><h3 class="fsec">Thông tin</h3><div class="field"><label for="f-name">Tên</label><input type="text" id="f-name" maxlength="40" value="'+esc(x.name)+'"></div>'+
   '<div class="field" style="margin:0"><label>Biểu tượng</label><div class="icon-grid">'+HICONS.map(i=>'<button type="button" data-ic="'+i+'" class="'+(i===x.icon?'is-on':'')+'">'+ic(i)+'</button>').join('')+'</div></div></div>'+
   '<div class="fcard"><h3 class="fsec">Cách ghi nhận</h3>'+seg('kind',[['count','Đếm lần'],['amount','Theo lượng']],x.kind)+
   '<div class="g2" style="margin-top:12px"><div class="field"><label for="f-unit">Đơn vị</label><input type="text" id="f-unit" maxlength="12" placeholder="lần, ml, trang…" value="'+esc(x.unit)+'"></div>'+num('f-step','Cộng nhanh',x.step,1,'','only-amount')+'</div>'+
