@@ -324,3 +324,25 @@ body.reduce-motion *{animation-duration:.01ms!important}
 .heat i[data-hd]{cursor:pointer}
 .heat i.sel{outline:2.5px solid var(--orange);outline-offset:1px}
 .heat i.tdy{font-weight:800}
+
+/* ===== v8: màu khung đổi sắc độ theo cấp (tím → hồng → cam → vàng kim), viền + vầng sáng ===== */
+:root{
+ --grad1:linear-gradient(100deg,#6D28D9,#A855F7);
+ --grad2:linear-gradient(100deg,#B02ACB,#EC4899);
+ --grad3:linear-gradient(100deg,#F97316,#FBBF24);
+ --grad4:linear-gradient(100deg,#FCD34D,#FFF7D1)}
+.habit{border:1.5px solid color-mix(in srgb,var(--gl,#A855F7) 80%,transparent);box-shadow:0 8px 26px -8px var(--gl,#A855F7)}
+.habit[data-lv="1"]{background:var(--grad1);--gl:#A855F7;--fg:#fff;color:#fff}
+.habit[data-lv="2"]{background:var(--grad2);--gl:#EC4899;--fg:#fff;color:#fff}
+.habit[data-lv="3"]{background:var(--grad3);--gl:#FB923C;--fg:#331400;color:#331400}
+.habit[data-lv="4"]{background:var(--grad4);--gl:#FCD34D;--fg:#331400;color:#331400;box-shadow:0 8px 30px -4px var(--gl)}
+.habit .count,.habit .pop{color:var(--fg)}
+.habit[data-lv="3"] .h-ic,.habit[data-lv="4"] .h-ic{background:rgba(51,20,0,.12)}
+.fx-wave i{border-color:var(--fg,#ffd24d)}
+.mg-ic[data-lv="3"],.mg-ic[data-lv="4"]{color:#331400}
+/* Huy hiệu: hiện đủ tên cấp (xuống 2 dòng nếu dài, không còn "Mệnh Tu...") */
+.habit{grid-template-columns:72px minmax(0,1fr) auto}
+.habit .badge{width:72px}
+.fx-wave{width:72px;height:72px}
+.habit .badge span,.habit[data-lv="3"] .badge span{display:flex;align-items:center;justify-content:center;min-height:2.3em;margin-top:2px;padding:0 2px;
+  white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;text-align:center;font-size:.7rem;line-height:1.15}

@@ -2,7 +2,7 @@
 const $=s=>document.querySelector(s);
 const DOW=['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
 const ic=(n,c='')=>'<svg class="ic '+c+'"><use href="#'+n+'"/></svg>';
-const LV=['#3a0d7c','#6a14b8','#a43ee6','#e3a6ff'],LV2=['#6a2bc4','#a050e6','#dba0f7','#fbeaff'];
+const LV=['#6D28D9','#B02ACB','#F97316','#FCD34D'],LV2=['#6a2bc4','#a050e6','#dba0f7','#fbeaff'];
 /* Huy hiệu: số vòng sóng = số cấp, ngôi sao vàng ở tâm */
 function badge(lv){let r='';for(let i=0;i<lv;i++){const rx=9+i*6,ry=4+i*3.2;
   r+='<path d="M'+(28-rx)+' 30A'+rx+' '+ry+' 0 0 0 '+(28+rx)+' 30" fill="none" stroke="#ffc457" stroke-width="1.6" stroke-linecap="round" opacity="'+(1-i*.15)+'"/>'}
@@ -21,13 +21,13 @@ function rHabits(){const hs=D.habits.filter(h=>!h.arch),n=new Date(),nm=D.cfg.na
     '<div class="pg"><div class="wave"><i style="--pct:'+(s.into/s.th*100).toFixed(1)+'%"></i></div><em class="pgn">'+s.into+'/'+s.th+(s.stars?' ★'+s.stars:'')+'</em></div></article>'}
   return h}
 /* Mỗi cấp một số điểm riêng do người dùng nhập: lvs = [cấp1→2, cấp2→3, cấp3→4, mỗi ★] */
-function xpChips(L){return L.map((v,k)=>'<span class="xp" style="background:'+LV[k]+';color:'+(k==3?'#2a0a55':'#fff')+'">'+(k<3?(k+1)+'→'+(k+2):'mỗi ★')+' <b>'+v+'</b></span>').join('')}
+function xpChips(L){return L.map((v,k)=>'<span class="xp" style="background:'+LV[k]+';color:'+(k>=2?'#331400':'#fff')+'">'+(k<3?(k+1)+'→'+(k+2):'mỗi ★')+' <b>'+v+'</b></span>').join('')}
 function updateXp(){const e=$('#xp-prev');if(e)e.innerHTML=xpChips([0,1,2,3].map(i=>Math.max(1,+$('#f-l'+i).value||1)))}
 const MODE={log:'1 điểm / lần',day:'1 điểm / ngày đạt mục tiêu',amount:'điểm theo lượng'};
 function rManage(){const act=D.habits.filter(x=>!x.arch),arc=D.habits.filter(x=>x.arch);
   let h='<h1 class="h-date">Quản lý</h1><p class="h-sub">'+act.length+' thói quen đang theo dõi</p><button class="btn btn-primary" data-new style="width:100%;margin:14px 0">'+ic('ui-plus')+' Thêm thói quen</button>';
   act.forEach(x=>{const s=stat(x);
-    h+='<div class="mg"><div class="mg-top"><span class="mg-ic" data-lv="'+s.lv+'">'+ic(x.icon)+'</span><div class="grow"><div class="t">'+esc(x.name)+'</div><div class="n">'+(x.goal>0?'Mục tiêu '+x.goal+(x.unit?' '+esc(x.unit):'')+'/ngày':'Không đặt mục tiêu')+' · '+MODE[x.mode]+(x.limit>0?' · tối đa '+x.limit+'/ngày':'')+'</div></div>'+
+    h+='<div class="mg"><div class="mg-top"><span class="mg-ic" data-lv="'+s.lv+'">'+ic(x.icon)+'</span><div class="grow"><div class="t">'+esc(x.name)+'</div>'+(x.note?'<div class="n" style="font-style:italic">“'+esc(x.note)+'”</div>':'')+'<div class="n">'+(x.goal>0?'Mục tiêu '+x.goal+(x.unit?' '+esc(x.unit):'')+'/ngày':'Không đặt mục tiêu')+' · '+MODE[x.mode]+(x.limit>0?' · tối đa '+x.limit+'/ngày':'')+'</div></div>'+
     '<div class="mg-mv"><button data-move="'+x.id+'|top" aria-label="Lên đầu">'+ic('ui-top','s')+'</button><button data-move="'+x.id+'|-1" aria-label="Lên">'+ic('ui-up','s')+'</button><button data-move="'+x.id+'|1" aria-label="Xuống">'+ic('ui-down','s')+'</button></div></div>'+
     '<div class="mg-xp">'+xpChips(lvsOf(x))+'</div><div class="mg-btns"><button data-edit="'+x.id+'">'+ic('ui-edit','s')+' Sửa</button><button data-arch="'+x.id+'">'+ic('ui-archive','s')+' Lưu trữ</button><button class="btn-danger" data-del="'+x.id+'">'+ic('ui-trash','s')+' Xóa</button></div></div>'});
   if(!act.length)h+='<div class="empty">Chưa có thói quen nào. Bấm "Thêm thói quen" và chọn một mẫu dựng sẵn.</div>';
@@ -76,7 +76,7 @@ function formHtml(x){const isNew=!x;x=x||{name:'',icon:'h-star',kind:'count',uni
   const num=(id,l,v,m,s,cls)=>'<div class="field '+(cls||'')+'"><label for="'+id+'">'+l+'</label><input type="number" inputmode="numeric" id="'+id+'" min="'+m+'" value="'+v+'">'+(s?'<small>'+s+'</small>':'')+'</div>';
   const lab=['Thăng cấp 1: '+nm[0]+' → '+nm[1],'Thăng cấp 2: '+nm[1]+' → '+nm[2],'Thăng cấp 3: '+nm[2]+' → '+nm[3],'Mỗi ★ sau '+nm[3]];
   return '<div class="f" id="fform" data-kind="'+x.kind+'"><h2 class="h-date">'+(x.id?'Sửa':'Thêm')+' thói quen</h2>'+
-  '<div class="fcard"><h3 class="fsec">Thông tin</h3><div class="field"><label for="f-name">Tên</label><input type="text" id="f-name" maxlength="40" value="'+esc(x.name)+'"></div>'+
+  '<div class="fcard"><h3 class="fsec">Thông tin</h3><div class="field"><label for="f-name">Tên</label><input type="text" id="f-name" maxlength="40" value="'+esc(x.name)+'"></div>'+'<div class="field"><label for="f-note">Vì sao tôi làm việc này (không bắt buộc)</label><input type="text" id="f-note" maxlength="80" value="'+esc(x.note||'')+'"></div>'+
   '<div class="field" style="margin:0"><label>Biểu tượng</label><div class="icon-grid">'+HICONS.map(i=>'<button type="button" data-ic="'+i+'" class="'+(i===x.icon?'is-on':'')+'">'+ic(i)+'</button>').join('')+'</div></div></div>'+
   '<div class="fcard"><h3 class="fsec">Cách ghi nhận</h3>'+seg('kind',[['count','Đếm lần'],['amount','Theo lượng']],x.kind)+
   '<div class="g2" style="margin-top:12px"><div class="field"><label for="f-unit">Đơn vị</label><input type="text" id="f-unit" maxlength="12" placeholder="lần, ml, trang…" value="'+esc(x.unit)+'"></div>'+num('f-step','Cộng nhanh',x.step,1,'','only-amount')+'</div>'+
