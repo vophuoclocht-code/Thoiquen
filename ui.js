@@ -11,13 +11,12 @@ function ringSvg(p){return '<svg class="ring" viewBox="0 0 64 64"><circle cx="32
 function rHabits(){const hs=D.habits.filter(h=>!h.arch),n=new Date(),nm=D.cfg.names;
   const p=hs.length?hs.reduce((a,h)=>a+prog(h),0)/hs.length:0,done=hs.filter(h=>prog(h)>=1).length;
   let h='<h1 class="h-date">'+DOW[n.getDay()]+', '+n.getDate()+' tháng '+(n.getMonth()+1)+'</h1>';
-  h+='<div class="today"><div class="today-t"><span>'+done+'/'+hs.length+' thói quen xong</span><b>'+Math.round(p*100)+'%</b></div><div class="bar"><i style="width:'+(p*100).toFixed(1)+'%"></i></div></div>';
   if(!hs.length)h+='<div class="empty">Chưa có thói quen nào.<br>Vào tab Quản lý để thêm thói quen đầu tiên.</div>';
-  for(const x of hs){const s=stat(x),u=x.unit?' '+esc(x.unit):'',len=String(s.today.v).length;
+  for(const x of hs){const s=stat(x),u=x.unit?' '+esc(x.unit):'',len=String(s.today.v).length,sub=s.full?'Đủ hôm nay':(x.goal>0?'Mục tiêu '+x.goal+u:'');
     /* Chạm vào cả khung để cộng. Trái: huy hiệu cấp. Giữa: icon + tên. Phải: số lần hôm nay thật to. Dưới: thanh lên cấp */
     h+='<article class="habit'+(s.full?' is-full':'')+'" data-lv="'+s.lv+'" data-id="'+x.id+'">'+
     '<div class="badge">'+badge(s.lv)+'<span>'+esc(nm[s.lv-1])+'</span></div>'+
-    '<div class="h-main"><div class="h-name">'+ic(x.icon,'s')+'<span>'+esc(x.name)+'</span></div><div class="h-sub2">'+(s.full?'Đủ hôm nay':(x.goal>0?'Mục tiêu '+x.goal+u:'Không đặt mục tiêu'))+'</div></div>'+
+    '<div class="h-main"><div class="h-name">'+ic(x.icon,'l')+'<span>'+esc(x.name)+'</span></div>'+(sub?'<div class="h-sub2">'+sub+'</div>':'')+'</div>'+
     '<div class="count"><b class="cnum'+(len>=4?' xl':len==3?' l':'')+'">'+s.today.v+'</b><span>'+(x.goal>0?'/ '+x.goal+u:(x.unit?esc(x.unit):'hôm nay'))+'</span></div>'+
     '<div class="pg"><div class="wave"><i style="--pct:'+(s.into/s.th*100).toFixed(1)+'%"></i></div><em class="pgn">'+s.into+'/'+s.th+(s.stars?' ★'+s.stars:'')+'</em></div></article>'}
   return h}
@@ -35,21 +34,32 @@ function rManage(){const act=D.habits.filter(x=>!x.arch),arc=D.habits.filter(x=>
   if(arc.length){h+='<div class="day-head">Đã lưu trữ</div><div class="group">';
     arc.forEach(x=>h+='<div class="row">'+ic(x.icon)+'<div class="grow t">'+esc(x.name)+'</div><button data-arch="'+x.id+'" class="chip">Khôi phục</button><button data-del="'+x.id+'" aria-label="Xóa">'+ic('ui-trash')+'</button></div>');h+='</div>'}
   return h}
-function rHistory(){const L=D.log.slice().sort((a,b)=>b.t-a.t),by={};let h='<h1 class="h-date">Lịch sử</h1>';
-  for(const l of L)(by[dayKey(l.t)]=by[dayKey(l.t)]||[]).push(l);
-  const ks=Object.keys(by),td=dayKey(),yd=dayKey(Date.now()-864e5);
-  if(!ks.length)h+='<div class="empty">Chưa có ghi nhận nào</div>';
-  for(const k of ks){h+='<div class="day-head">'+(k===td?'Hôm nay':k===yd?'Hôm qua':k.split('-').reverse().join('/'))+'</div><div class="group">';
-    for(const l of by[k]){const x=D.habits.find(y=>y.id===l.h);if(!x)continue;const d=new Date(l.t);
-      h+='<div class="row entry">'+ic(x.icon)+'<div class="grow"><div class="t">'+esc(x.name)+'</div><div class="n">'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+' · +'+l.v+(x.unit?' '+esc(x.unit):'')+'</div></div><button data-hdel="'+l.id+'" aria-label="Xóa">'+ic('ui-trash')+'</button></div>'}
+const unitOf=x=>x.unit||'lần';
+const dLab=k=>{const t=dayKey(),y=dayKey(Date.now()-864e5);return k===t?'Hôm nay':k===y?'Hôm qua':k.slice(8)+'/'+k.slice(5,7)};
+let histOpen={},statDay=null;
+/* Lịch sử: mỗi ngày gom theo thói quen, hiện tổng số lần nhấn; bấm vào để xem từng lần */
+function rHistory(){let h='<h1 class="h-date">Lịch sử</h1>';const L=D.log.slice().sort((a,b)=>b.t-a.t),by={};
+  for(const l of L){const k=dayKey(l.t);by[k]=by[k]||{};(by[k][l.h]=by[k][l.h]||[]).push(l)}
+  const ks=Object.keys(by);if(!ks.length)h+='<div class="empty">Chưa có ghi nhận nào</div>';
+  for(const k of ks){h+='<div class="day-head">'+dLab(k)+'</div><div class="group">';
+    for(const id in by[k]){const x=D.habits.find(y=>y.id===id);if(!x)continue;const ls=by[k][id],tot=ls.reduce((a,l)=>a+l.v,0),key=k+'|'+id,open=!!histOpen[key];
+      h+='<div class="hx"><button class="row hx-h" data-hx="'+key+'" aria-expanded="'+open+'">'+ic(x.icon)+'<div class="grow"><div class="t">'+esc(x.name)+'</div>'+(x.kind==='amount'?'<div class="n">Tổng '+tot+' '+esc(unitOf(x))+'</div>':'')+'</div><span class="hx-n"><b>'+ls.length+'</b> lần</span>'+ic(open?'ui-up':'ui-down','s')+'</button>';
+      if(open)h+='<div class="hx-d">'+ls.map(l=>{const d=new Date(l.t);return '<div class="row entry"><div class="grow n">'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+'</div><b>+'+l.v+' '+esc(unitOf(x))+'</b><button data-hdel="'+l.id+'" aria-label="Xóa">'+ic('ui-trash','s')+'</button></div>'}).join('')+'</div>';
+      h+='</div>'}
     h+='</div>'}
   return h}
-function rStats(){const st=streaks(),n=new Date(),y=n.getFullYear(),m=n.getMonth(),dim=new Date(y,m+1,0).getDate(),off=(new Date(y,m,1).getDay()+6)%7;
-  let h='<h1 class="h-date">Thống kê</h1><div class="stat-grid" style="margin-top:12px"><div class="stat">'+ic('ui-flame')+'<b>'+st.cur+'</b>ngày liên tiếp</div><div class="stat"><b>'+st.best+'</b>dài nhất</div></div>';
+function rStats(){const st=streaks(),n=new Date(),y=n.getFullYear(),m=n.getMonth(),dim=new Date(y,m+1,0).getDate(),off=(new Date(y,m,1).getDay()+6)%7,td=dayKey();if(!statDay)statDay=td;
+  let h='<h1 class="h-date">Thống kê</h1><div class="stat-row"><div>'+ic('ui-flame')+'<b>'+st.cur+'</b><span>ngày liên tiếp</span></div><i></i><div><b>'+st.best+'</b><span>ngày dài nhất</span></div></div>';
   h+='<div class="day-head">Tháng '+(m+1)+'</div><div class="heat">'+['T2','T3','T4','T5','T6','T7','CN'].map(d=>'<i style="background:none">'+d+'</i>').join('')+'<i style="background:none"></i>'.repeat(off);
-  for(let d=1;d<=dim;d++){const r=dayRatio(y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'));h+='<i data-h="'+(r>=1?4:r>=.66?3:r>=.33?2:r>0?1:0)+'">'+d+'</i>'}
+  for(let d=1;d<=dim;d++){const k=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'),r=dayRatio(k);
+    h+='<i data-hd="'+k+'" data-h="'+(r>=1?4:r>=.66?3:r>=.33?2:r>0?1:0)+'" class="'+(k===statDay?'sel':'')+(k===td?' tdy':'')+'">'+d+'</i>'}
+  /* Chi tiết ngày đang chọn, dùng đơn vị của từng thói quen */
+  const items=D.habits.map(x=>{const e=perDay(x)[statDay];return e?{x,e}:null}).filter(Boolean);
+  h+='</div><div class="day-head">'+(statDay===td?'Hôm nay':'Ngày '+dLab(statDay))+'</div><div class="group">';
+  h+=items.length?items.map(o=>'<div class="row">'+ic(o.x.icon)+'<div class="grow"><div class="t">'+esc(o.x.name)+'</div><div class="n">'+o.e.n+' lần nhấn</div></div><b>'+o.e.v+' '+esc(unitOf(o.x))+'</b></div>').join(''):'<div class="empty">Không có ghi nhận</div>';
   h+='</div><div class="day-head">Theo thói quen</div><div class="group">';
-  for(const x of D.habits){const s=stat(x);h+='<div class="row">'+ic(x.icon)+'<div class="grow"><div class="t">'+esc(x.name)+'</div><div class="n">'+esc(D.cfg.names[s.lv-1])+(s.stars?' '+'★'.repeat(s.stars):'')+'</div></div><b>'+s.pts+' đ</b></div>'}
+  for(const x of D.habits){const s=stat(x),tot=Object.values(perDay(x)).reduce((a,e)=>a+e.v,0);
+    h+='<div class="row">'+ic(x.icon)+'<div class="grow"><div class="t">'+esc(x.name)+'</div><div class="n">'+esc(D.cfg.names[s.lv-1])+(s.stars?' '+'★'.repeat(s.stars):'')+' · '+s.pts+' điểm</div></div><b>'+tot+' '+esc(unitOf(x))+'</b></div>'}
   return h+'</div>'}
 function sw(k,on){return '<button class="switch" role="switch" aria-checked="'+on+'" data-sw="'+k+'"></button>'}
 function rSettings(){let h='<h1 class="h-date">Cài đặt</h1><div class="group">';

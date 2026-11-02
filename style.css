@@ -300,3 +300,27 @@ body.reduce-motion *{animation-duration:.01ms!important}
 @keyframes ripple{0%{transform:scale(.6);opacity:.9}100%{transform:scale(1.9);opacity:0}}
 .fx-label{position:absolute;left:50%;top:-12px;z-index:4;padding:4px 14px;border-radius:99px;background:#ffd24d;color:#3a1500;font:700 .85rem var(--serif);white-space:nowrap;transform:translateX(-50%);animation:lab 2s ease-out forwards}
 @keyframes lab{0%{opacity:0}15%,85%{opacity:1}100%{opacity:0}}
+
+/* ===== v7: màu sáng hơn, huy hiệu đổi màu, tên to, lịch sử gom nhóm, thống kê 1 hàng ===== */
+:root{
+ --grad1:linear-gradient(90deg,#6b2fc0 0,#6b2fc0 32%,#c25bb8 60%,#ffa64a 80%,#ffd24d 100%);
+ --grad2:linear-gradient(90deg,#8a45dc 0,#8a45dc 32%,#d46cc4 60%,#ffb057 80%,#ffdb62 100%);
+ --grad3:linear-gradient(90deg,#b06af0 0,#b06af0 32%,#e883cf 60%,#ffbf63 80%,#ffe373 100%);
+ --grad4:linear-gradient(90deg,#e3a6ff 0,#e3a6ff 32%,#ffb3dc 60%,#ffd98a 80%,#fff3a8 100%)}
+.habit[data-lv="3"]{color:#2a0a55}
+.habit .badge{background:linear-gradient(160deg,#2b0b5e,#4d1894);border:1.5px solid rgba(255,210,77,.8)}
+.habit .h-name{font-size:1.4rem;font-weight:800;gap:8px;line-height:1.15}
+.habit .h-name .ic{width:32px;height:32px}
+.habit .h-name span{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mg-ic[data-lv="3"]{color:#2a0a55}
+.hx-h{width:100%;text-align:left}
+.hx-n{font-size:.9rem;color:var(--ink2);white-space:nowrap}.hx-n b{font-size:1.3rem;color:var(--p);font-family:var(--serif)}
+.hx-d{background:#faf5ff;border-top:1px solid var(--line)}.hx-d .row{min-height:48px;padding-left:var(--s5)}
+.stat-row{display:flex;align-items:center;background:var(--card);border-radius:var(--r-l);box-shadow:var(--sh-s);padding:14px 8px;margin:12px 0}
+.stat-row>div{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+.stat-row .ic{color:var(--orange)}
+.stat-row b{font:700 1.6rem/1 var(--serif);color:var(--p)}.stat-row span{font-size:.8rem;color:var(--ink2)}
+.stat-row>i{width:1px;height:30px;background:var(--line)}
+.heat i[data-hd]{cursor:pointer}
+.heat i.sel{outline:2.5px solid var(--orange);outline-offset:1px}
+.heat i.tdy{font-weight:800}

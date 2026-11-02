@@ -32,6 +32,8 @@ document.addEventListener('contextmenu',e=>{if(e.target.closest('.habit'))e.prev
 document.addEventListener('click',e=>{const t=e.target,q=s=>t.closest(s);let m;
   if(m=q('[data-tab]'))go(m.dataset.tab);
   else if(m=q('.seg button')){const g=m.parentNode;g.querySelectorAll('button').forEach(b=>b.classList.toggle('is-on',b===m));if(g.dataset.seg==='kind')$('#fform').dataset.kind=m.dataset.v}
+  else if(m=q('[data-hx]')){histOpen[m.dataset.hx]=!histOpen[m.dataset.hx];render()}
+  else if(m=q('[data-hd]')){statDay=m.dataset.hd;render()}
   else if(q('[data-close]'))closeSheet();
   else if(q('[data-new]')){selIcon='h-star';sheet(formHtml());updateXp()}
   else if(m=q('[data-edit]')){const x=D.habits.find(h=>h.id===m.dataset.edit);selIcon=x.icon;sheet(formHtml(x));updateXp()}
