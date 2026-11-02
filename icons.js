@@ -7,6 +7,7 @@ const P={
 'ui-stats':'M5 20V10M12 20V4M19 20v-7',
 'ui-settings':'M4 8h10M18 8h2M4 16h2M10 16h10M16 6v4M8 14v4',
 'ui-undo':'M9 7L4 12l5 5M4 12h10a6 6 0 010 8h-3',
+'ui-up':'M6 15l6-6 6 6','ui-down':'M6 9l6 6 6-6','ui-top':'M6 5h12M6 17l6-6 6 6','ui-archive':'M4 7h16v4H4zM6 11v8h12v-8M10 15h4',
 'ui-plus':'M12 5v14M5 12h14','ui-minus':'M5 12h14',
 'ui-trash':'M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13',
 'ui-edit':'M4 20l4-1 11-11-3-3L5 16l-1 4z','ui-check':'M5 12l5 5 9-10',
