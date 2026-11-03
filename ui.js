@@ -19,11 +19,11 @@ function badge(lv){const L=lv-1,x=42;
   const st=(cx,cy,s,fl,o)=>'<path d="M'+cx+' '+(cy-s)+'Q'+(cx+s*.2)+' '+(cy-s*.2)+' '+(cx+s)+' '+cy+'Q'+(cx+s*.2)+' '+(cy+s*.2)+' '+cx+' '+(cy+s)+'Q'+(cx-s*.2)+' '+(cy+s*.2)+' '+(cx-s)+' '+cy+'Q'+(cx-s*.2)+' '+(cy-s*.2)+' '+cx+' '+(cy-s)+'z" fill="'+fl+'"'+(o?' opacity="'+o+'"':'')+'/>';
   const rip=(o,n)=>Array.from({length:n},(_,i)=>{const sx=n===3?7:6.2,sy=n===3?1.6:1.3,op=Math.max(0,o*(1-i*(n===3?.2:.13)));return '<ellipse cx="'+x+'" cy="50" rx="'+(8+i*sx).toFixed(1)+'" ry="'+(2.4+i*sy).toFixed(1)+'" fill="none" stroke="#ffc457" stroke-width="1.4" opacity="'+op.toFixed(2)+'"/>'}).join('');
   let g='<svg viewBox="0 0 84 84" aria-hidden="true"><defs><linearGradient id="bdk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a24b0"/><stop offset="1" stop-color="#e060c4"/></linearGradient><linearGradient id="bdw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a58f0"/><stop offset="1" stop-color="#5b25ad"/></linearGradient><radialGradient id="bdg"><stop offset="0" stop-color="#fff6c9" stop-opacity=".95"/><stop offset="1" stop-color="#ffd24d" stop-opacity="0"/></radialGradient></defs>';
-  g+=L<=4?'<rect width="84" height="44" fill="url(#bdk)"/><rect y="44" width="84" height="40" fill="url(#bdw)"/>':'<rect width="84" height="84" fill="url(#bdk)"/>';
-  if(L<=5){const m=[0,0,1,1,4,5][L],y=[56,45,40,36,33,31][m],r=4.2+m*.5,f=mix('#ffc4ec','#ffe9a0',m/5);
+  g+=L<=4?'<rect width="84" height="40" fill="url(#bdk)"/><rect y="40" width="84" height="44" fill="url(#bdw)"/>':'<rect width="84" height="84" fill="url(#bdk)"/>';
+  if(L<=5){const m=[0,0,1,1,4,5][L],y=[48,39,0,0,34,31][m],r=4.2+m*.5,f=mix('#ffc4ec','#ffe9a0',m/5);
     for(let i=1;i<=Math.min(m-1,3);i++)g+='<circle cx="'+x+'" cy="'+(y+r+i*4.5).toFixed(1)+'" r="'+(1.7-i*.3).toFixed(1)+'" fill="#ffd24d" opacity="'+(.65-i*.15).toFixed(2)+'"/>';
     g+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*2.6).toFixed(1)+'" fill="url(#bdg)" opacity="'+(m===0?.2:.3+m*.1).toFixed(2)+'"/><circle cx="'+x+'" cy="'+y+'" r="'+r.toFixed(1)+'" fill="'+f+'"/><circle cx="'+(x-r*.3).toFixed(1)+'" cy="'+(y-r*.3).toFixed(1)+'" r="'+(r*.35).toFixed(1)+'" fill="#fff" opacity=".85"/>';
-    if(m===0)g+='<rect y="44" width="84" height="40" fill="#8a4ee6" opacity=".4"/>'; /* lớp nước phủ lên: quả cầu nằm dưới nước */
+    if(m===0)g+='<rect y="40" width="84" height="44" fill="#8a4ee6" opacity=".4"/>'; /* lớp nước phủ lên: quả cầu nằm dưới nước */
     if(L>=1&&L<=4)g+=rip(.95-m*.18,L===3?6:3); /* sóng vẽ SAU quả cầu = ở phía trước */
   }else{const k=L-6,y=31,r=[11,11,11,12,13,16][k];
     const S=[[12,12],[72,11],[14,48],[70,49],[7,30],[78,31],[31,7],[54,56]];
@@ -42,17 +42,22 @@ function ringSvg(p){return '<svg class="ring" viewBox="0 0 64 64"><circle cx="32
 function nameFs(n){const L=[...n].length;return L<=7?1.85:L<=11?1.6:L<=16?1.35:1.12}
 function nameIc(x,fs){const p=Math.round(fs*24);return '<svg class="ic" style="width:'+p+'px;height:'+p+'px"><use href="#'+x.icon+'"/></svg>'}
 function rHabits(){const hs=D.habits.filter(h=>!h.arch),n=new Date(),nm=D.cfg.names;
-  const p=hs.length?hs.reduce((a,h)=>a+prog(h),0)/hs.length:0,done=hs.filter(h=>prog(h)>=1).length;
   let h='<h1 class="h-date">'+DOW[n.getDay()]+', '+n.getDate()+' tháng '+(n.getMonth()+1)+'</h1>';
   if(!hs.length)h+='<div class="empty">Chưa có thói quen nào.<br>Vào tab Quản lý để thêm thói quen đầu tiên.</div>';
-  for(const x of hs){const s=stat(x),u=x.unit?' '+esc(x.unit):'',len=String(s.today.v).length,sub=s.full?'Đủ hôm nay':(x.goal>0?'Mục tiêu '+x.goal+u:'');
-    /* Chạm vào cả khung để cộng. Trái: huy hiệu cấp. Giữa: icon + tên. Phải: số lần hôm nay thật to. Dưới: thanh lên cấp */
+  for(const x of hs){const s=stat(x),u=x.unit?' '+esc(x.unit):'',len=String(s.today.v).length,sub=s.full?'Đủ hôm nay':(x.goal>0?'Mục tiêu '+x.goal+u:''),fs=nameFs(x.name);
+    /* Cấu trúc: [huy hiệu 84px] + [cột nội dung cao đúng 84px: hàng trên = tên + số lần, hàng dưới = thanh lên cấp] → mép trên/dưới luôn thẳng hàng */
     h+='<article class="habit'+(s.full?' is-full':'')+'" data-lv="'+s.lv+'" data-id="'+x.id+'" style="'+lvStyle(s.lv-1)+'">'+
     '<div class="badge">'+badge(s.lv)+bspan(nm[s.lv-1])+'</div>'+
-    '<div class="h-main"><div class="h-name" style="font-size:'+nameFs(x.name)+'rem">'+nameIc(x,nameFs(x.name))+'<span>'+esc(x.name)+'</span></div>'+(sub?'<div class="h-sub2">'+sub+'</div>':'')+'</div>'+
-    '<div class="count"><b class="cnum'+(len>=4?' xl':len==3?' l':'')+'">'+s.today.v+'</b><span>'+(x.goal>0?'/ '+x.goal+u:(x.unit?esc(x.unit):'hôm nay'))+'</span></div>'+
-    '<div class="pg"><div class="wave"><i style="--pct:'+(s.into/s.th*100).toFixed(1)+'%"></i></div><em class="pgn">'+s.into+'/'+s.th+(s.stars?' ★'+s.stars:'')+'</em></div></article>'}
+    '<div class="hc"><div class="hrow"><div class="h-main"><div class="h-name" style="font-size:'+fs+'rem">'+nameIc(x,fs)+'<span>'+esc(x.name)+'</span></div>'+(sub?'<div class="h-sub2">'+sub+'</div>':'')+'</div>'+
+    '<div class="count"><b class="cnum'+(len>=4?' xl':len==3?' l':'')+'">'+s.today.v+'</b><span>'+(x.goal>0?'/ '+x.goal+u:(x.unit?esc(x.unit):'hôm nay'))+'</span></div></div>'+
+    '<div class="pg"><div class="wave"><i style="--pct:'+(s.into/s.th*100).toFixed(1)+'%"></i></div><em class="pgn">'+s.into+'/'+s.th+(s.stars?' ★'+s.stars:'')+'</em></div></div></article>'}
   return h}
+/* Tự co giãn cỡ chữ tên: tên ngắn (≤4 chữ) thì rất to, tên dài thì nhỏ dần cho vừa 1 dòng; quá dài mới xuống 2 dòng */
+function fitNames(){document.querySelectorAll('.habit .h-name').forEach(el=>{const sp=el.querySelector('span'),ic0=el.querySelector('svg'),sub=el.parentNode.querySelector('.h-sub2');
+  let f=sub?1.75:2.15;const set=v=>{el.style.fontSize=v+'rem';ic0.style.width=ic0.style.height=Math.round(v*22)+'px'};
+  sp.style.whiteSpace='nowrap';set(f);
+  while(f>1.05&&sp.scrollWidth>sp.clientWidth+1){f=Math.round((f-.05)*100)/100;set(f)}
+  if(sp.scrollWidth>sp.clientWidth+1)sp.style.whiteSpace='normal'})}
 /* Mỗi cấp một số điểm riêng do người dùng nhập: lvs = [cấp1→2, cấp2→3, cấp3→4, mỗi ★] */
 function xpChips(L){return L.map((v,k)=>'<span class="xp" style="background:'+LV[k]+';color:'+(k>=2?'#331400':'#fff')+'">'+(k<3?(k+1)+'→'+(k+2):'mỗi ★')+' <b>'+v+'</b></span>').join('')}
 function updateXp(){}

@@ -425,3 +425,17 @@ input[type=date]{width:100%;min-height:48px;padding:10px 14px;border:1.5px solid
 .mg-mv button{flex:1;min-width:0;min-height:44px;border-radius:12px;background:#f4e9ff;color:var(--p);font-size:.85rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px}
 .mg-mv button:disabled{opacity:.35}
 .mg-top{padding-bottom:2px}
+
+/* ===== v19: khung thói quen dạng flex — huy hiệu và cột nội dung cùng cao 84px nên căn đều, không còn lệch xuống ===== */
+.habit{display:flex;align-items:center;gap:12px;padding:14px}
+.habit .badge{flex:none;width:84px;height:84px;align-self:center}
+.habit .hc{flex:1;min-width:0;height:84px;display:flex;flex-direction:column;justify-content:space-between}
+.habit .hrow{flex:1;min-height:0;display:flex;align-items:center;gap:10px}
+.habit .h-main{flex:1;min-width:0;align-self:center}
+.habit .count{flex:none;align-self:center;max-width:110px;text-align:right}
+.cnum{font-size:2.2rem}.cnum.l{font-size:1.8rem}.cnum.xl{font-size:1.45rem}
+.count span{font-size:.74rem}
+.habit .pg{flex:none;height:22px;display:flex;align-items:center;gap:10px}
+.habit .pg .wave{flex:1;min-width:0}
+.habit .h-name span{display:block;overflow:hidden;text-overflow:ellipsis;-webkit-line-clamp:unset}
+.fx-wave{left:15px;top:15px}

@@ -1,6 +1,7 @@
 'use strict';
 let cur='habits',undoT=null,undoFn=null,fxQ=Promise.resolve(),selIcon='h-star';
-function render(){$('#screen-'+cur).innerHTML=R[cur]()}
+function render(){$('#screen-'+cur).innerHTML=R[cur]();if(cur==='habits')fitNames()}
+window.addEventListener('resize',()=>{if(cur==='habits')fitNames()});
 function go(t){cur=t;document.querySelectorAll('.screen').forEach(s=>s.hidden=s.dataset.screen!==t);
   document.querySelectorAll('.tab').forEach(b=>{const on=b.dataset.tab===t;b.classList.toggle('is-active',on);on?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current')});render()}
 function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2200)}
