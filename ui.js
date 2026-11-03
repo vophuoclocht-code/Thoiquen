@@ -39,7 +39,7 @@ function badge(lv){const L=lv-1,x=42;
   return g+'</svg>'}
 function ringSvg(p){return '<svg class="ring" viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" fill="none" stroke="#eee7fa" stroke-width="7"/><circle cx="32" cy="32" r="26" fill="none" stroke="url(#gp)" stroke-width="7" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="'+(163.4*(1-p)).toFixed(1)+'" transform="rotate(-90 32 32)"/></svg>'}
 /* Cỡ chữ tên thói quen và icon đi cùng nhau, giảm dần khi tên dài */
-function nameFs(n){const L=[...n].length;return L<=7?1.85:L<=11?1.6:L<=16?1.35:1.12}
+function nameFs(n){const L=[...n].length;return L<=7?1.6:L<=11?1.45:L<=16?1.25:1.05}
 function nameIc(x,fs){const p=Math.round(fs*24);return '<svg class="ic" style="width:'+p+'px;height:'+p+'px"><use href="#'+x.icon+'"/></svg>'}
 function rHabits(){const hs=D.habits.filter(h=>!h.arch),n=new Date(),nm=D.cfg.names;
   let h='<h1 class="h-date">'+DOW[n.getDay()]+', '+n.getDate()+' tháng '+(n.getMonth()+1)+'</h1>';
@@ -52,12 +52,19 @@ function rHabits(){const hs=D.habits.filter(h=>!h.arch),n=new Date(),nm=D.cfg.na
     '<div class="count"><b class="cnum'+(len>=4?' xl':len==3?' l':'')+'">'+s.today.v+'</b><span>'+(x.goal>0?'/ '+x.goal+u:(x.unit?esc(x.unit):'hôm nay'))+'</span></div></div>'+
     '<div class="pg"><div class="wave"><i style="--pct:'+(s.into/s.th*100).toFixed(1)+'%"></i></div><em class="pgn">'+s.into+'/'+s.th+(s.stars?' ★'+s.stars:'')+'</em></div></div></article>'}
   return h}
-/* Tự co giãn cỡ chữ tên: tên ngắn (≤4 chữ) thì rất to, tên dài thì nhỏ dần cho vừa 1 dòng; quá dài mới xuống 2 dòng */
-function fitNames(){document.querySelectorAll('.habit .h-name').forEach(el=>{const sp=el.querySelector('span'),ic0=el.querySelector('svg'),sub=el.parentNode.querySelector('.h-sub2');
-  let f=sub?1.75:2.15;const set=v=>{el.style.fontSize=v+'rem';ic0.style.width=ic0.style.height=Math.round(v*22)+'px'};
-  sp.style.whiteSpace='nowrap';set(f);
-  while(f>1.05&&sp.scrollWidth>sp.clientWidth+1){f=Math.round((f-.05)*100)/100;set(f)}
-  if(sp.scrollWidth>sp.clientWidth+1)sp.style.whiteSpace='normal'})}
+/* Tự chỉnh cỡ chữ tên cho vừa khung (đã đo thật):
+   - tên từ 4 chữ trở xuống: 1 dòng, to hết mức vừa;
+   - tên từ 5 chữ trở lên (hoặc quá dài không vừa 1 dòng): xuống 2 dòng và thu nhỏ chữ. */
+function fitNames(){document.querySelectorAll('.habit .h-name').forEach(el=>{
+  const sp=el.querySelector('span'),ico=el.querySelector('svg'),sub=el.parentNode.querySelector('.h-sub2'),words=sp.textContent.trim().split(/\s+/).length;
+  const set=v=>{el.style.fontSize=v+'rem';ico.style.width=ico.style.height=Math.round(v*21)+'px'};
+  const one=()=>{sp.style.whiteSpace='nowrap';sp.style.display='block';sp.style.webkitLineClamp='unset'};
+  const two=()=>{sp.style.whiteSpace='normal';sp.style.display='-webkit-box';sp.style.webkitBoxOrient='vertical';sp.style.webkitLineClamp='2'};
+  let f,min;
+  if(words<5){f=sub?1.45:1.65;min=1.0;one();set(f);while(f>min&&sp.scrollWidth>sp.clientWidth+1){f=Math.round((f-.05)*100)/100;set(f)}
+    if(sp.scrollWidth<=sp.clientWidth+1)return}
+  f=sub?1.0:1.15;min=.85;two();set(f);
+  while(f>min&&sp.scrollHeight>sp.clientHeight+1){f=Math.round((f-.05)*100)/100;set(f)}})}
 /* Mỗi cấp một số điểm riêng do người dùng nhập: lvs = [cấp1→2, cấp2→3, cấp3→4, mỗi ★] */
 function xpChips(L){return L.map((v,k)=>'<span class="xp" style="background:'+LV[k]+';color:'+(k>=2?'#331400':'#fff')+'">'+(k<3?(k+1)+'→'+(k+2):'mỗi ★')+' <b>'+v+'</b></span>').join('')}
 function updateXp(){}

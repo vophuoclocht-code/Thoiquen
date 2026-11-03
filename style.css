@@ -439,3 +439,10 @@ input[type=date]{width:100%;min-height:48px;padding:10px 14px;border:1.5px solid
 .habit .pg .wave{flex:1;min-width:0}
 .habit .h-name span{display:block;overflow:hidden;text-overflow:ellipsis;-webkit-line-clamp:unset}
 .fx-wave{left:15px;top:15px}
+
+/* ===== v20: sửa lỗi lệch + thanh tiến độ mất ===== */
+/* luật cũ (position:absolute; top:8px; right:10px) vẫn còn tác dụng khi position:relative → huy hiệu bị đẩy xuống 8px, sang trái 10px */
+.habit .badge{top:auto;right:auto;bottom:auto;left:auto}
+/* .pg trước đây bị align-self:start nên co lại, thanh tiến độ rộng 0px */
+.habit .pg{align-self:stretch;width:100%}
+.habit .h-name{gap:8px}
