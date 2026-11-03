@@ -31,10 +31,12 @@ document.addEventListener('pointercancel',()=>{clearTimeout(pt);pt=null;dId=null
 document.addEventListener('contextmenu',e=>{if(e.target.closest('.habit'))e.preventDefault()});
 document.addEventListener('click',e=>{const t=e.target,q=s=>t.closest(s);let m;
   if(m=q('[data-tab]'))go(m.dataset.tab);
-  else if(m=q('.seg button')){const g=m.parentNode;g.querySelectorAll('button').forEach(b=>b.classList.toggle('is-on',b===m));if(g.dataset.seg==='kind')$('#fform').dataset.kind=m.dataset.v}
+  else if(m=q('.seg button')){const g=m.parentNode;g.querySelectorAll('button').forEach(b=>b.classList.toggle('is-on',b===m));if(g.dataset.seg==='kind')$('#fform').dataset.kind=m.dataset.v;else if(g.dataset.seg==='atg'||g.dataset.seg==='amd')adjRefresh(true)}
   else if(m=q('[data-hx]')){histOpen[m.dataset.hx]=!histOpen[m.dataset.hx];render()}
   else if(m=q('[data-hd]')){statDay=m.dataset.hd;render()}
   else if(q('[data-fill]')){const b=Math.max(1,+$('#f-fb').value||10),d=Math.max(0,+$('#f-fi').value||0);document.querySelectorAll('.lvin').forEach((e,i)=>e.value=b+i*d)}
+  else if(m=q('[data-adj]')){const p=m.dataset.adj.split('|'),x=D.habits.find(h=>h.id===p[0]);if(x){sheet(adjHtml(x,p[1]));adjRefresh(true)}}
+  else if(q('[data-adj-save]'))adjSave()
   else if(q('[data-close]'))closeSheet();
   else if(q('[data-new]')){selIcon='h-star';sheet(formHtml());updateXp()}
   else if(m=q('[data-edit]')){const x=D.habits.find(h=>h.id===m.dataset.edit);selIcon=x.icon;sheet(formHtml(x));updateXp()}
@@ -64,3 +66,14 @@ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js');
 
 document.addEventListener('input',e=>{if(/^f-l\d$/.test(e.target.id))updateXp()});
+
+function adjSave(){const a=adjCalc();if(isNaN(a.n)){toast('Hãy nhập một số');return}
+  if(a.r.md==='set'&&a.n<0){toast('Số mới không được âm');return}
+  if(a.r.key>dayKey()){toast('Không chọn ngày trong tương lai');return}
+  if(!a.d){toast('Không có thay đổi nào');return}
+  if(a.cur+a.d<0){toast('Kết quả không được nhỏ hơn 0');return}
+  const k=a.r.key,t=k===dayKey()?Date.now():new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10),12).getTime(),o={t,note:$('#a-note').value.trim(),v:0,c:0,p:0};
+  if(a.r.tg==='v'){o.v=a.d;o.c=a.h.kind==='count'?a.d:Math.round(a.d/(a.h.step||1))}else o.p=a.d;
+  const l=addAdj(a.h,o);adjCtx=null;closeSheet();render();showUndo(()=>{removeLog(l.id);render()})}
+document.addEventListener('change',e=>{if(e.target.id==='a-date')adjRefresh(true)});
+document.addEventListener('input',e=>{if(e.target.id==='a-n')adjRefresh(false)});

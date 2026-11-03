@@ -59,7 +59,7 @@ function rManage(){const act=D.habits.filter(x=>!x.arch),arc=D.habits.filter(x=>
   act.forEach(x=>{const s=stat(x),c=lvCol(s.lv-1),fg=s.lv>=8?'#331400':'#fff';
     h+='<div class="mg"><div class="mg-top"><span class="mg-ic" style="background:linear-gradient(135deg,'+c[0]+','+c[1]+')!important;color:'+fg+'!important">'+ic(x.icon,'l')+'</span><div class="grow"><div class="t">'+esc(x.name)+'</div><div class="n">'+esc(nm[s.lv-1])+(s.stars?' '+'★'.repeat(s.stars):'')+' · '+s.pts+' điểm</div></div>'+
     '<div class="mg-mv"><button data-move="'+x.id+'|top" aria-label="Lên đầu">'+ic('ui-top','s')+'</button><button data-move="'+x.id+'|-1" aria-label="Lên">'+ic('ui-up','s')+'</button><button data-move="'+x.id+'|1" aria-label="Xuống">'+ic('ui-down','s')+'</button></div></div>'+
-    '<div class="mg-btns"><button data-edit="'+x.id+'">'+ic('ui-edit','s')+' Sửa</button><button data-arch="'+x.id+'">'+ic('ui-archive','s')+' Lưu trữ</button><button class="btn-danger" data-del="'+x.id+'">'+ic('ui-trash','s')+' Xóa</button></div></div>'});
+    '<div class="mg-btns"><button data-adj="'+x.id+'|'+dayKey()+'">'+ic('ui-settings','s')+' Điều chỉnh</button><button data-edit="'+x.id+'">'+ic('ui-edit','s')+' Sửa</button><button data-arch="'+x.id+'">'+ic('ui-archive','s')+' Lưu trữ</button><button class="btn-danger" data-del="'+x.id+'">'+ic('ui-trash','s')+' Xóa</button></div></div>'});
   if(!act.length)h+='<div class="empty">Chưa có thói quen nào. Bấm "Thêm thói quen" để bắt đầu.</div>';
   if(arc.length){h+='<div class="day-head">Đã lưu trữ</div><div class="group">';
     arc.forEach(x=>h+='<div class="row">'+ic(x.icon)+'<div class="grow t">'+esc(x.name)+'</div><button data-arch="'+x.id+'" class="chip">Khôi phục</button><button data-del="'+x.id+'" aria-label="Xóa">'+ic('ui-trash')+'</button></div>');h+='</div>'}
@@ -72,12 +72,35 @@ function rHistory(){let h='<h1 class="h-date">Lịch sử</h1>';const L=D.log.sl
   for(const l of L){const k=dayKey(l.t);by[k]=by[k]||{};(by[k][l.h]=by[k][l.h]||[]).push(l)}
   const ks=Object.keys(by);if(!ks.length)h+='<div class="empty">Chưa có ghi nhận nào</div>';
   for(const k of ks){h+='<div class="day-head">'+dLab(k)+'</div><div class="group">';
-    for(const id in by[k]){const x=D.habits.find(y=>y.id===id);if(!x)continue;const ls=by[k][id],tot=ls.reduce((a,l)=>a+l.v,0),key=k+'|'+id,open=!!histOpen[key];
-      h+='<div class="hx"><button class="row hx-h" data-hx="'+key+'" aria-expanded="'+open+'">'+ic(x.icon)+'<div class="grow"><div class="t">'+esc(x.name)+'</div>'+(x.kind==='amount'?'<div class="n">Tổng '+tot+' '+esc(unitOf(x))+'</div>':'')+'</div><span class="hx-n"><b>'+ls.length+'</b> lần</span>'+ic(open?'ui-up':'ui-down','s')+'</button>';
-      if(open)h+='<div class="hx-d">'+ls.map(l=>{const d=new Date(l.t);return '<div class="row entry"><div class="grow n">'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+'</div><b>+'+l.v+' '+esc(unitOf(x))+'</b><button data-hdel="'+l.id+'" aria-label="Xóa">'+ic('ui-trash','s')+'</button></div>'}).join('')+'</div>';
+    for(const id in by[k]){const x=D.habits.find(y=>y.id===id);if(!x)continue;const ls=by[k][id],key=k+'|'+id,open=!!histOpen[key],u=esc(unitOf(x));
+      const cnt=Math.max(0,ls.reduce((a,l)=>a+(l.c!==undefined?l.c:1),0)),tot=Math.max(0,ls.reduce((a,l)=>a+l.v,0)),pp=ls.reduce((a,l)=>a+(l.p||0),0),adj=ls.some(l=>l.adj),sub=[];
+      if(x.kind==='amount')sub.push('Tổng '+tot+' '+u);if(pp)sub.push('Điểm chỉnh '+(pp>0?'+':'−')+Math.abs(pp));else if(adj)sub.push('đã điều chỉnh');
+      h+='<div class="hx"><button class="row hx-h" data-hx="'+key+'" aria-expanded="'+open+'">'+ic(x.icon)+'<div class="grow"><div class="t">'+esc(x.name)+'</div>'+(sub.length?'<div class="n">'+sub.join(' · ')+'</div>':'')+'</div><span class="hx-n"><b>'+cnt+'</b> lần</span>'+ic(open?'ui-up':'ui-down','s')+'</button>';
+      if(open)h+='<div class="hx-d">'+ls.map(l=>{const d=new Date(l.t),tm=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'),del='<button data-hdel="'+l.id+'" aria-label="Xóa">'+ic('ui-trash','s')+'</button>';
+        if(l.adj){const amt=l.p?(l.p>0?'+':'−')+Math.abs(l.p)+' điểm':(l.v>0?'+':'−')+Math.abs(l.v)+' '+u;
+          return '<div class="row entry"><div class="grow"><div class="n"><span class="adj-tag">Điều chỉnh</span> '+tm+'</div><b>'+amt+'</b>'+(l.note?'<div class="n" style="font-style:italic">Lý do: '+esc(l.note)+'</div>':'')+'</div>'+del+'</div>'}
+        return '<div class="row entry"><div class="grow n">'+tm+'</div><b>+'+l.v+' '+u+'</b>'+del+'</div>'}).join('')+
+        '<div class="row"><button class="btn" data-adj="'+id+'|'+k+'" style="width:100%">'+ic('ui-settings','s')+' Điều chỉnh ngày này</button></div></div>';
       h+='</div>'}
     h+='</div>'}
   return h}
+/* Sheet điều chỉnh: sửa số lần/lượng hoặc điểm, đặt thành số mới hoặc cộng/trừ, kèm lý do */
+let adjCtx=null;
+function adjCur(h,key){const e=perDay(h)[key]||{n:0,v:0,p:0};return{v:e.v,p:dayPts(h,e)}}
+function adjHtml(h,key){adjCtx={id:h.id};
+  return '<div class="f"><h2 class="h-date">Điều chỉnh</h2><p class="h-sub">'+esc(h.name)+'</p><div class="fcard" style="margin-top:12px">'+
+  '<div class="field"><label for="a-date">Ngày</label><input type="date" id="a-date" value="'+key+'" max="'+dayKey()+'"></div>'+
+  '<div class="seg" data-seg="atg"><button type="button" data-v="v" class="is-on">Số lần</button><button type="button" data-v="p">Điểm</button></div>'+
+  '<div class="seg" data-seg="amd" style="margin-top:10px"><button type="button" data-v="set" class="is-on">Đặt thành</button><button type="button" data-v="add">Cộng / trừ</button></div>'+
+  '<div class="field" style="margin-top:12px"><label for="a-n" id="a-lab"></label><input type="number" inputmode="numeric" id="a-n" value="0"><small id="a-prev"></small></div>'+
+  '<div class="field"><label for="a-note">Lý do (không bắt buộc)</label><input type="text" id="a-note" maxlength="80" placeholder="Ví dụ: quên bấm hôm qua"></div></div>'+
+  '<div class="fsave"><button class="btn btn-primary" data-adj-save style="width:100%">Lưu điều chỉnh</button></div></div>'}
+function adjRead(){const q=k=>document.querySelector('.seg[data-seg="'+k+'"] .is-on').dataset.v;return{key:$('#a-date').value||dayKey(),tg:q('atg'),md:q('amd')}}
+function adjCalc(){const h=D.habits.find(x=>x.id===adjCtx.id),r=adjRead(),c=adjCur(h,r.key),cur=r.tg==='v'?c.v:c.p,n=Math.round(+$('#a-n').value);
+  return{h,r,cur,u:r.tg==='v'?unitOf(h):'điểm',n,d:isNaN(n)?0:(r.md==='set'?n-cur:n)}}
+function adjRefresh(reset){if(!adjCtx||!$('#a-n'))return;let a=adjCalc();if(reset){$('#a-n').value=a.r.md==='set'?a.cur:0;a=adjCalc()}
+  $('#a-lab').textContent=a.r.md==='set'?'Số mới ('+a.u+')':'Cộng thêm, nhập số âm để trừ ('+a.u+')';
+  $('#a-prev').textContent='Hiện tại '+a.cur+' '+a.u+' → sau khi chỉnh '+Math.max(0,a.cur+a.d)+' '+a.u+(a.d?' ('+(a.d>0?'+':'−')+Math.abs(a.d)+')':'')}
 function rStats(){const st=streaks(),n=new Date(),y=n.getFullYear(),m=n.getMonth(),dim=new Date(y,m+1,0).getDate(),off=(new Date(y,m,1).getDay()+6)%7,td=dayKey();if(!statDay)statDay=td;
   let h='<h1 class="h-date">Thống kê</h1><div class="stat-row"><div>'+ic('ui-flame')+'<b>'+st.cur+'</b><span>ngày liên tiếp</span></div><i></i><div><b>'+st.best+'</b><span>ngày dài nhất</span></div></div>';
   h+='<div class="day-head">Tháng '+(m+1)+'</div><div class="heat">'+['T2','T3','T4','T5','T6','T7','CN'].map(d=>'<i style="background:none">'+d+'</i>').join('')+'<i style="background:none"></i>'.repeat(off);
