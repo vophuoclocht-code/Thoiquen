@@ -38,6 +38,9 @@ function badge(lv){const L=lv-1,x=42;
     g+=st(x,y,r,mix('#ffe08a','#fffbe0',k/5))}
   return g+'</svg>'}
 function ringSvg(p){return '<svg class="ring" viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" fill="none" stroke="#eee7fa" stroke-width="7"/><circle cx="32" cy="32" r="26" fill="none" stroke="url(#gp)" stroke-width="7" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="'+(163.4*(1-p)).toFixed(1)+'" transform="rotate(-90 32 32)"/></svg>'}
+/* Cỡ chữ tên thói quen và icon đi cùng nhau, giảm dần khi tên dài */
+function nameFs(n){const L=[...n].length;return L<=7?1.85:L<=11?1.6:L<=16?1.35:1.12}
+function nameIc(x,fs){const p=Math.round(fs*24);return '<svg class="ic" style="width:'+p+'px;height:'+p+'px"><use href="#'+x.icon+'"/></svg>'}
 function rHabits(){const hs=D.habits.filter(h=>!h.arch),n=new Date(),nm=D.cfg.names;
   const p=hs.length?hs.reduce((a,h)=>a+prog(h),0)/hs.length:0,done=hs.filter(h=>prog(h)>=1).length;
   let h='<h1 class="h-date">'+DOW[n.getDay()]+', '+n.getDate()+' tháng '+(n.getMonth()+1)+'</h1>';
@@ -46,7 +49,7 @@ function rHabits(){const hs=D.habits.filter(h=>!h.arch),n=new Date(),nm=D.cfg.na
     /* Chạm vào cả khung để cộng. Trái: huy hiệu cấp. Giữa: icon + tên. Phải: số lần hôm nay thật to. Dưới: thanh lên cấp */
     h+='<article class="habit'+(s.full?' is-full':'')+'" data-lv="'+s.lv+'" data-id="'+x.id+'" style="'+lvStyle(s.lv-1)+'">'+
     '<div class="badge">'+badge(s.lv)+bspan(nm[s.lv-1])+'</div>'+
-    '<div class="h-main"><div class="h-name">'+ic(x.icon,'l')+'<span>'+esc(x.name)+'</span></div>'+(sub?'<div class="h-sub2">'+sub+'</div>':'')+'</div>'+
+    '<div class="h-main"><div class="h-name" style="font-size:'+nameFs(x.name)+'rem">'+nameIc(x,nameFs(x.name))+'<span>'+esc(x.name)+'</span></div>'+(sub?'<div class="h-sub2">'+sub+'</div>':'')+'</div>'+
     '<div class="count"><b class="cnum'+(len>=4?' xl':len==3?' l':'')+'">'+s.today.v+'</b><span>'+(x.goal>0?'/ '+x.goal+u:(x.unit?esc(x.unit):'hôm nay'))+'</span></div>'+
     '<div class="pg"><div class="wave"><i style="--pct:'+(s.into/s.th*100).toFixed(1)+'%"></i></div><em class="pgn">'+s.into+'/'+s.th+(s.stars?' ★'+s.stars:'')+'</em></div></article>'}
   return h}
@@ -57,7 +60,7 @@ const MODE={log:'1 điểm / lần',day:'1 điểm / ngày đạt mục tiêu',a
 function rManage(){const act=D.habits.filter(x=>!x.arch),arc=D.habits.filter(x=>x.arch),nm=D.cfg.names;
   let h='<h1 class="h-date">Quản lý</h1><p class="h-sub">'+act.length+' thói quen đang theo dõi</p><button class="btn btn-primary" data-new style="width:100%;margin:14px 0">'+ic('ui-plus')+' Thêm thói quen</button>';
   act.forEach(x=>{const s=stat(x),c=lvCol(s.lv-1),fg=s.lv>=8?'#331400':'#fff';
-    h+='<div class="mg"><div class="mg-top"><span class="mg-ic" style="background:linear-gradient(135deg,'+c[0]+','+c[1]+')!important;color:'+fg+'!important">'+ic(x.icon,'l')+'</span><div class="grow"><div class="t">'+esc(x.name)+'</div><div class="n">'+esc(nm[s.lv-1])+(s.stars?' '+'★'.repeat(s.stars):'')+' · '+s.pts+' điểm</div></div>'+
+    h+='<div class="mg"><div class="mg-top"><span class="mg-ic" style="background:linear-gradient(135deg,'+c[0]+','+c[1]+')!important;color:'+fg+'!important">'+ic(x.icon,'l')+'</span><div class="grow"><div class="t">'+esc(x.name)+'</div><div class="n">'+esc(nm[s.lv-1])+(s.stars?' '+'★'.repeat(s.stars):'')+'</div><div class="n">'+s.pts+' điểm</div></div>'+
     '<div class="mg-mv"><button data-move="'+x.id+'|top" aria-label="Lên đầu">'+ic('ui-top','s')+'</button><button data-move="'+x.id+'|-1" aria-label="Lên">'+ic('ui-up','s')+'</button><button data-move="'+x.id+'|1" aria-label="Xuống">'+ic('ui-down','s')+'</button></div></div>'+
     '<div class="mg-btns"><button data-adj="'+x.id+'|'+dayKey()+'">'+ic('ui-settings','s')+' Điều chỉnh</button><button data-edit="'+x.id+'">'+ic('ui-edit','s')+' Sửa</button><button data-arch="'+x.id+'">'+ic('ui-archive','s')+' Lưu trữ</button><button class="btn-danger" data-del="'+x.id+'">'+ic('ui-trash','s')+' Xóa</button></div></div>'});
   if(!act.length)h+='<div class="empty">Chưa có thói quen nào. Bấm "Thêm thói quen" để bắt đầu.</div>';

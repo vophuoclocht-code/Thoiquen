@@ -398,3 +398,18 @@ details.group>summary.row{font-weight:600}
 input[type=date]{width:100%;min-height:48px;padding:10px 14px;border:1.5px solid var(--line);border-radius:var(--r-m);background:#fff}
 .adj-tag{display:inline-block;padding:1px 8px;border-radius:99px;background:#f4e9ff;color:var(--p);font-weight:600;font-size:.75rem}
 .mg-btns{flex-wrap:wrap}.mg-btns button{font-size:.84rem;min-width:0;padding:0 6px}
+
+/* ===== v16: tên thói quen + icon to hơn, font serif nhất quán; Quản lý gọn ===== */
+.habit .h-name{gap:10px;font-family:var(--serif);font-size:1.7rem;font-weight:700;line-height:1.15;letter-spacing:-.2px}
+.habit .h-name .ic{width:40px;height:40px}
+.row .t,.mg-top .t{font-family:var(--serif)}
+.mg-top .t{font-size:1.2rem}
+.mg-top .n+.n{margin-top:2px;font-weight:600;color:var(--p)}
+.mg-btns{flex-wrap:nowrap;justify-content:space-between}
+.mg-btns button{flex:0 1 auto;white-space:nowrap;font-size:.8rem;gap:4px;padding:0 4px}
+
+/* ===== v17: chống mất chữ (dấu thanh phía trên, đuôi y/g/p phía dưới) + căn lại tên/icon ===== */
+.habit .h-name{line-height:1.3;gap:10px}
+.habit .h-name span{line-height:1.3;padding:.16em 0;margin:-.16em 0}
+.habit .badge span,.habit[data-lv] .badge span{line-height:1.45;padding:12px 2px 5px}
+.mg-top .t{line-height:1.35;padding:.1em 0}
