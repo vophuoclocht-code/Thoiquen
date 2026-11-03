@@ -368,3 +368,22 @@ body.reduce-motion *{animation-duration:.01ms!important}
 .habit .badge{width:84px;background:var(--tile);border:1.5px solid rgba(255,255,255,.65);box-shadow:0 3px 10px rgba(0,0,0,.28);padding:6px 2px 6px}
 .habit .badge span,.habit[data-lv="3"] .badge span{display:block;min-height:0;white-space:nowrap;overflow:hidden;text-overflow:clip;text-align:center;line-height:1.2;margin-top:2px}
 .fx-wave{width:84px;height:84px}
+
+/* ===== v10: 12 cấp, huy hiệu dạng cảnh (biển → trời), thẻ Quản lý gọn, mục gập ===== */
+.habit[data-lv]{background:linear-gradient(100deg,var(--c0,#6D28D9),var(--c1,#A855F7));color:var(--fg,#fff);box-shadow:0 8px 26px -8px var(--gl,#A855F7)}
+.habit[data-lv] .count,.habit[data-lv] .pop{color:var(--fg,#fff)}
+.habit .badge{width:84px;padding:0;overflow:hidden;border-radius:16px;background:#4a1d9a;border:1.5px solid rgba(255,255,255,.75);box-shadow:0 4px 12px rgba(40,10,100,.35)}
+.habit .badge svg{display:block;width:84px;height:62px;margin:0}
+.habit .badge span,.habit[data-lv] .badge span{display:block;margin:0;padding:3px 2px 4px;background:linear-gradient(180deg,#5b25ad,#42177f);color:#fff3b0!important}
+.mg-top{align-items:center}.mg-top .t{font-size:1.1rem;font-weight:700}
+.mg-ic{width:48px;height:48px}
+.mg-btns{margin-top:10px}
+details.fcard>summary,details.group>summary{list-style:none;cursor:pointer}
+details>summary::-webkit-details-marker{display:none}
+.xpd summary{display:flex;align-items:center;gap:8px;min-height:44px;font:600 1rem var(--serif);color:var(--p)}
+.xpd summary small{margin-left:auto;color:var(--ink2);font:.78rem var(--sans)}
+.xpd[open] summary .ic,details.group[open] summary .ic{transform:rotate(180deg)}
+.qf{display:flex;align-items:flex-end;gap:10px;margin:10px 0}.qf .field{flex:1;margin:0}.qf .btn{min-height:48px;padding:0 14px}
+.lr2{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
+.lr2 label{flex:1;font-size:.9rem}.lr2 input{width:92px;min-height:42px;text-align:right}
+details.group>summary.row{font-weight:600}

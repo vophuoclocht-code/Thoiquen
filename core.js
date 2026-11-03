@@ -1,11 +1,12 @@
 'use strict';
 /* Dữ liệu + logic. Cấp, điểm, chuỗi ngày đều TÍNH LẠI từ nhật ký (D.log), không lưu cứng. */
 const KEY='tq_data', SCHEMA=1;
-const DEF=()=>({schema:SCHEMA,habits:[],log:[],cfg:{names:['Bể Khổ','Mệnh Tuyền','Thần Kiều','Bỉ Ngạn'],dayStart:0,vibrate:true,reduce:false}});
+const NAMES=['Khổ Hải','Vọng Tâm','Mệnh Tuyền','Linh Triều','Thần Kiều','Bỉ Ngạn','Tinh Huy','Chiếu Thế','Vạn Tượng','Pháp Tướng','Quy Chân','Kim Tính'];
+const DEF=()=>({schema:SCHEMA,habits:[],log:[],cfg:{names:NAMES.slice(),dayStart:0,vibrate:true,reduce:false}});
 let D;
 function load(){try{D=JSON.parse(localStorage.getItem(KEY))||DEF()}catch(e){D=DEF()}migrate()}
 function migrate(){ /* Sau này nâng schema: thêm bước nâng cấp tại đây, đừng xóa dữ liệu cũ */
-  D.cfg=Object.assign(DEF().cfg,D.cfg||{});D.habits=D.habits||[];D.log=D.log||[];D.schema=SCHEMA}
+  D.cfg=Object.assign(DEF().cfg,D.cfg||{});if(!Array.isArray(D.cfg.names)||D.cfg.names.length!==12)D.cfg.names=NAMES.slice();D.habits=D.habits||[];D.log=D.log||[];D.schema=SCHEMA}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){toast('Không lưu được dữ liệu')}}
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -15,12 +16,15 @@ function perDay(h){const m={};for(const l of D.log)if(l.h===h.id){const k=dayKey
 /* Điểm trong 1 ngày: mode log=mỗi lần 1đ, day=đạt mục tiêu 1đ, amount=theo tổng lượng; có trần theo limit */
 function dayPts(h,e){if(!e)return 0;let p=h.mode==='amount'?e.v:h.mode==='day'?(e.v>=goalOf(h)?1:0):e.n;if(h.limit>0)p=Math.min(p,h.limit);return Math.floor(p)}
 const goalOf=h=>h.goal>0?h.goal:1; /* mục tiêu 0 = không đặt: làm 1 lần là xong */
-const lvsOf=h=>h.lvs&&h.lvs.length===4?h.lvs:[0,1,2,3].map(k=>Math.max(1,(h.th||10)+k*(h.inc||0)));
-const need=(h,k)=>Math.max(1,lvsOf(h)[Math.min(k,3)]); /* điểm cần cho bước thứ k */
+/* lvs: 12 số = điểm cần cho 11 lần thăng cấp + số điểm cho mỗi ★. Hỗ trợ dữ liệu cũ (4 số, th/inc) */
+const lvsOf=h=>{const L=h.lvs;if(L&&L.length===12)return L;
+  if(L&&L.length===4){const d=Math.max(0,L[2]-L[1]);return Array.from({length:12},(_,i)=>i<3?L[i]:i===11?L[3]:L[2]+(i-2)*d)}
+  const b=h.th||10,d=h.inc||0;return Array.from({length:12},(_,i)=>b+i*d)};
+const need=(h,k)=>Math.max(1,lvsOf(h)[Math.min(k,11)]); /* điểm cần cho bước thứ k */
 function stat(h){const m=perDay(h),k=dayKey();let pts=0;for(const d in m)pts+=dayPts(h,m[d]);
   let steps=0,rem=pts;while(steps<999&&rem>=need(h,steps)){rem-=need(h,steps);steps++}
   const t=m[k]||{n:0,v:0},tp=dayPts(h,t);
-  return{pts,th:need(h,steps),lv:Math.min(4,steps+1),stars:Math.max(0,steps-3),into:rem,today:t,todayPts:tp,full:h.limit>0&&tp>=h.limit}}
+  return{pts,th:need(h,steps),lv:Math.min(12,steps+1),stars:Math.max(0,steps-11),into:rem,today:t,todayPts:tp,full:h.limit>0&&tp>=h.limit}}
 const prog=h=>Math.min(1,stat(h).today.v/goalOf(h));
 function addLog(h,v){if(stat(h).full)return null;const l={id:uid(),h:h.id,t:Date.now(),v};D.log.push(l);save();return l}
 function removeLog(id){const i=D.log.findIndex(l=>l.id===id);if(i<0)return null;const l=D.log.splice(i,1)[0];save();return l}

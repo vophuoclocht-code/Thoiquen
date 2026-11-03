@@ -13,10 +13,10 @@ function showUndo(fn){undoFn=fn;const b=$('#undo');b.hidden=false;b.classList.re
 /* Hiệu ứng thăng cấp (xếp hàng, chạy lần lượt) */
 function queueFx(id,from,to){fxQ=fxQ.then(()=>new Promise(res=>{const c=document.querySelector('.habit[data-id="'+id+'"]');
   if(!c||D.cfg.reduce||matchMedia('(prefers-reduced-motion:reduce)').matches){res();return}
-  c.dataset.lv=from;c.classList.add('is-leveling');c.style.setProperty('--ngrad','var(--grad'+to+')');
+  c.dataset.lv=from;c.classList.add('is-leveling');c.style.setProperty('--ngrad','linear-gradient(100deg,'+lvCol(to-1).join(',')+')');
   const mk=(cls,t)=>{const e=document.createElement('div');e.className=cls;if(t)e.innerHTML=t;c.appendChild(e);return e};
   const els=[mk('fx-bg'),mk('fx-wave','<i></i><i></i><i></i>'),mk('fx-label')];els[2].textContent='Thăng cấp: '+D.cfg.names[to-1];vib([20,50,90,50,20]);
-  setTimeout(()=>{c.dataset.lv=to;const b=c.querySelector('.badge');if(b)b.innerHTML=badge(to)+bspan(D.cfg.names[to-1])},1000);
+  setTimeout(()=>{c.dataset.lv=to;c.style.cssText=lvStyle(to-1);const b=c.querySelector('.badge');if(b)b.innerHTML=badge(to)+bspan(D.cfg.names[to-1])},1000);
   setTimeout(()=>{els.forEach(e=>e.remove());c.classList.remove('is-leveling');if(cur==='habits')render();res()},2100)}))}
 function doAdd(id){const h=D.habits.find(x=>x.id===id);if(!h)return;const b=stat(h),l=addLog(h,h.kind==='amount'?h.step:1);
   if(!l){toast('Đã đủ hôm nay');return}vib(15);const a=stat(h);render();const c=document.querySelector('.habit[data-id="'+id+'"]');if(c){const p=document.createElement('i');p.className='pop';p.textContent='+'+l.v;c.appendChild(p);setTimeout(()=>p.remove(),700)}showUndo(()=>{removeLog(l.id);render()});if(a.lv>b.lv)queueFx(id,b.lv,a.lv)}
@@ -34,14 +34,15 @@ document.addEventListener('click',e=>{const t=e.target,q=s=>t.closest(s);let m;
   else if(m=q('.seg button')){const g=m.parentNode;g.querySelectorAll('button').forEach(b=>b.classList.toggle('is-on',b===m));if(g.dataset.seg==='kind')$('#fform').dataset.kind=m.dataset.v}
   else if(m=q('[data-hx]')){histOpen[m.dataset.hx]=!histOpen[m.dataset.hx];render()}
   else if(m=q('[data-hd]')){statDay=m.dataset.hd;render()}
+  else if(q('[data-fill]')){const b=Math.max(1,+$('#f-fb').value||10),d=Math.max(0,+$('#f-fi').value||0);document.querySelectorAll('.lvin').forEach((e,i)=>e.value=b+i*d)}
   else if(q('[data-close]'))closeSheet();
   else if(q('[data-new]')){selIcon='h-star';sheet(formHtml());updateXp()}
   else if(m=q('[data-edit]')){const x=D.habits.find(h=>h.id===m.dataset.edit);selIcon=x.icon;sheet(formHtml(x));updateXp()}
   else if(m=q('[data-ic]')){selIcon=m.dataset.ic;document.querySelectorAll('[data-ic]').forEach(b=>b.classList.toggle('is-on',b===m))}
-  else if(q('[data-th2]')){e.preventDefault();[0,1,2,3].forEach(i=>$('#f-l'+i).value=2);updateXp()}
+  else if(q('[data-th2]')){e.preventDefault();document.querySelectorAll('.lvin').forEach(e=>e.value=2)}
   else if(m=q('[data-save]')){const name=$('#f-name').value.trim(),n=(id,d)=>{const v=Math.floor(+$('#'+id).value);return isNaN(v)||v<0?d:v},sg=k=>document.querySelector('.seg[data-seg="'+k+'"] .is-on').dataset.v;
     if(!name){toast('Hãy nhập tên thói quen');return}
-    const lvs=[0,1,2,3].map(i=>Math.max(1,n('f-l'+i,10))),kind=sg('kind');
+    const lvs=Array.from({length:12},(_,i)=>Math.max(1,n('f-l'+i,10))),kind=sg('kind');
     const o={name,icon:selIcon,kind,unit:$('#f-unit').value.trim(),step:kind==='count'?1:Math.max(1,n('f-step',1)),goal:n('f-goal',1),mode:sg('mode'),limit:n('f-limit',0),lvs,th:lvs[0]};
     const x=D.habits.find(h=>h.id===m.dataset.save);if(x)Object.assign(x,o);else D.habits.push(Object.assign({id:uid()},o));save();closeSheet();render()}
   else if(m=q('[data-move]')){const p=m.dataset.move.split('|');moveHabit(p[0],p[1]);render()}
