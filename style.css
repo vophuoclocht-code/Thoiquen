@@ -413,3 +413,15 @@ input[type=date]{width:100%;min-height:48px;padding:10px 14px;border:1.5px solid
 .habit .h-name span{line-height:1.3;padding:.16em 0;margin:-.16em 0}
 .habit .badge span,.habit[data-lv] .badge span{line-height:1.45;padding:12px 2px 5px}
 .mg-top .t{line-height:1.35;padding:.1em 0}
+
+/* ===== v18: khung thói quen gọn (huy hiệu bên trái cao bằng cả khung), Quản lý có hàng sắp xếp riêng ===== */
+.habit{grid-template-areas:"bd main ct" "bd pg pg";gap:8px 12px;padding:14px;align-items:center}
+.habit .badge{align-self:center}
+.habit .h-main{align-self:end}
+.habit .count{align-self:end}
+.habit .pg{align-self:start}
+.cnum{font-size:2.4rem}.cnum.l{font-size:2rem}.cnum.xl{font-size:1.6rem}
+.mg-mv{display:flex;gap:8px;margin:12px 0 4px}
+.mg-mv button{flex:1;min-width:0;min-height:44px;border-radius:12px;background:#f4e9ff;color:var(--p);font-size:.85rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px}
+.mg-mv button:disabled{opacity:.35}
+.mg-top{padding-bottom:2px}

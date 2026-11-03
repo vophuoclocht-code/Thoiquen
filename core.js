@@ -48,7 +48,9 @@ function importJSON(text){let o;try{o=JSON.parse(text)}catch(e){return 'File kh�
   if(!o||typeof o.schema!=='number'||!Array.isArray(o.habits)||!Array.isArray(o.log))return 'File không đúng định dạng sao lưu Thói Quen';
   D=o;migrate();save();return ''}
 
-function moveHabit(id,d){const a=D.habits,i=a.findIndex(h=>h.id===id);if(i<0)return;const j=d==='top'?0:i+(+d);if(j<0||j>=a.length)return;a.splice(j,0,a.splice(i,1)[0]);save()}
+function moveHabit(id,d){const a=D.habits,i=a.findIndex(h=>h.id===id);if(i<0)return;
+  const act=a.map((h,k)=>k).filter(k=>!a[k].arch),pos=act.indexOf(i),tp=d==='top'?0:pos+(+d);
+  if(tp<0||tp>=act.length||tp===pos)return;a.splice(act[tp],0,a.splice(i,1)[0]);save()} /* đổi chỗ theo danh sách đang hiển thị */
 
 /* Điều chỉnh tay: một dòng riêng trong nhật ký (adj) mang độ lệch số lần c, lượng v, điểm p và lý do */
 function addAdj(h,o){const l={id:uid(),h:h.id,t:o.t,v:o.v,c:o.c,p:o.p,adj:true,note:o.note||''};D.log.push(l);save();return l}

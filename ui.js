@@ -17,14 +17,14 @@ function lvStyle(L){const c=lvCol(L);return '--c0:'+c[0]+';--c1:'+c[1]+';--gl:'+
    11 Quy Chân: vòng tròn khép lại, có đường tròn bao quanh.  12 Kim Tính: hợp thành 1 ngôi sao ở chính giữa, 8 tia sáng đều nhau. */
 function badge(lv){const L=lv-1,x=42;
   const st=(cx,cy,s,fl,o)=>'<path d="M'+cx+' '+(cy-s)+'Q'+(cx+s*.2)+' '+(cy-s*.2)+' '+(cx+s)+' '+cy+'Q'+(cx+s*.2)+' '+(cy+s*.2)+' '+cx+' '+(cy+s)+'Q'+(cx-s*.2)+' '+(cy+s*.2)+' '+(cx-s)+' '+cy+'Q'+(cx-s*.2)+' '+(cy-s*.2)+' '+cx+' '+(cy-s)+'z" fill="'+fl+'"'+(o?' opacity="'+o+'"':'')+'/>';
-  const rip=o=>[[8,2.4],[15,4],[22,5.6]].map((e,i)=>'<ellipse cx="'+x+'" cy="50" rx="'+e[0]+'" ry="'+e[1]+'" fill="none" stroke="#ffc457" stroke-width="1.4" opacity="'+Math.max(0,o*(1-i*.2)).toFixed(2)+'"/>').join('');
+  const rip=(o,n)=>Array.from({length:n},(_,i)=>{const sx=n===3?7:6.2,sy=n===3?1.6:1.3,op=Math.max(0,o*(1-i*(n===3?.2:.13)));return '<ellipse cx="'+x+'" cy="50" rx="'+(8+i*sx).toFixed(1)+'" ry="'+(2.4+i*sy).toFixed(1)+'" fill="none" stroke="#ffc457" stroke-width="1.4" opacity="'+op.toFixed(2)+'"/>'}).join('');
   let g='<svg viewBox="0 0 84 84" aria-hidden="true"><defs><linearGradient id="bdk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a24b0"/><stop offset="1" stop-color="#e060c4"/></linearGradient><linearGradient id="bdw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a58f0"/><stop offset="1" stop-color="#5b25ad"/></linearGradient><radialGradient id="bdg"><stop offset="0" stop-color="#fff6c9" stop-opacity=".95"/><stop offset="1" stop-color="#ffd24d" stop-opacity="0"/></radialGradient></defs>';
   g+=L<=4?'<rect width="84" height="44" fill="url(#bdk)"/><rect y="44" width="84" height="40" fill="url(#bdw)"/>':'<rect width="84" height="84" fill="url(#bdk)"/>';
-  if(L<=5){const y=[56,45,40,36,33,31][L],r=4.2+L*.5,f=mix('#ffc4ec','#ffe9a0',L/5);
-    for(let i=1;i<=Math.min(L-1,3);i++)g+='<circle cx="'+x+'" cy="'+(y+r+i*4.5).toFixed(1)+'" r="'+(1.7-i*.3).toFixed(1)+'" fill="#ffd24d" opacity="'+(.65-i*.15).toFixed(2)+'"/>';
-    g+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*2.6).toFixed(1)+'" fill="url(#bdg)" opacity="'+(L===0?.2:.3+L*.1).toFixed(2)+'"/><circle cx="'+x+'" cy="'+y+'" r="'+r.toFixed(1)+'" fill="'+f+'"/><circle cx="'+(x-r*.3).toFixed(1)+'" cy="'+(y-r*.3).toFixed(1)+'" r="'+(r*.35).toFixed(1)+'" fill="#fff" opacity=".85"/>';
-    if(L===0)g+='<rect y="44" width="84" height="40" fill="#8a4ee6" opacity=".4"/>'; /* lớp nước phủ lên: quả cầu nằm dưới nước */
-    if(L<=4)g+=rip(.95-L*.18); /* sóng vẽ SAU quả cầu = ở phía trước */
+  if(L<=5){const m=[0,0,1,1,4,5][L],y=[56,45,40,36,33,31][m],r=4.2+m*.5,f=mix('#ffc4ec','#ffe9a0',m/5);
+    for(let i=1;i<=Math.min(m-1,3);i++)g+='<circle cx="'+x+'" cy="'+(y+r+i*4.5).toFixed(1)+'" r="'+(1.7-i*.3).toFixed(1)+'" fill="#ffd24d" opacity="'+(.65-i*.15).toFixed(2)+'"/>';
+    g+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*2.6).toFixed(1)+'" fill="url(#bdg)" opacity="'+(m===0?.2:.3+m*.1).toFixed(2)+'"/><circle cx="'+x+'" cy="'+y+'" r="'+r.toFixed(1)+'" fill="'+f+'"/><circle cx="'+(x-r*.3).toFixed(1)+'" cy="'+(y-r*.3).toFixed(1)+'" r="'+(r*.35).toFixed(1)+'" fill="#fff" opacity=".85"/>';
+    if(m===0)g+='<rect y="44" width="84" height="40" fill="#8a4ee6" opacity=".4"/>'; /* lớp nước phủ lên: quả cầu nằm dưới nước */
+    if(L>=1&&L<=4)g+=rip(.95-m*.18,L===3?6:3); /* sóng vẽ SAU quả cầu = ở phía trước */
   }else{const k=L-6,y=31,r=[11,11,11,12,13,16][k];
     const S=[[12,12],[72,11],[14,48],[70,49],[7,30],[78,31],[31,7],[54,56]];
     let pts=k===1?S.slice(0,4):k===2?S:[];
@@ -59,9 +59,10 @@ function updateXp(){}
 const MODE={log:'1 điểm / lần',day:'1 điểm / ngày đạt mục tiêu',amount:'điểm theo lượng'};
 function rManage(){const act=D.habits.filter(x=>!x.arch),arc=D.habits.filter(x=>x.arch),nm=D.cfg.names;
   let h='<h1 class="h-date">Quản lý</h1><p class="h-sub">'+act.length+' thói quen đang theo dõi</p><button class="btn btn-primary" data-new style="width:100%;margin:14px 0">'+ic('ui-plus')+' Thêm thói quen</button>';
-  act.forEach(x=>{const s=stat(x),c=lvCol(s.lv-1),fg=s.lv>=8?'#331400':'#fff';
-    h+='<div class="mg"><div class="mg-top"><span class="mg-ic" style="background:linear-gradient(135deg,'+c[0]+','+c[1]+')!important;color:'+fg+'!important">'+ic(x.icon,'l')+'</span><div class="grow"><div class="t">'+esc(x.name)+'</div><div class="n">'+esc(nm[s.lv-1])+(s.stars?' '+'★'.repeat(s.stars):'')+'</div><div class="n">'+s.pts+' điểm</div></div>'+
-    '<div class="mg-mv"><button data-move="'+x.id+'|top" aria-label="Lên đầu">'+ic('ui-top','s')+'</button><button data-move="'+x.id+'|-1" aria-label="Lên">'+ic('ui-up','s')+'</button><button data-move="'+x.id+'|1" aria-label="Xuống">'+ic('ui-down','s')+'</button></div></div>'+
+  act.forEach((x,i)=>{const s=stat(x),c=lvCol(s.lv-1),fg=s.lv>=8?'#331400':'#fff',first=i===0,last=i===act.length-1;
+    h+='<div class="mg"><div class="mg-top"><span class="mg-ic" style="background:linear-gradient(135deg,'+c[0]+','+c[1]+')!important;color:'+fg+'!important">'+ic(x.icon,'l')+'</span><div class="grow"><div class="t">'+esc(x.name)+'</div><div class="n">'+esc(nm[s.lv-1])+(s.stars?' '+'★'.repeat(s.stars):'')+'</div><div class="n">'+s.pts+' điểm</div></div></div>'+
+    /* Hàng sắp xếp riêng, nút lớn, mờ đi khi đã ở đầu/cuối danh sách */
+    '<div class="mg-mv"><button data-move="'+x.id+'|top"'+(first?' disabled':'')+'>'+ic('ui-top','s')+' Lên đầu</button><button data-move="'+x.id+'|-1"'+(first?' disabled':'')+'>'+ic('ui-up','s')+' Lên</button><button data-move="'+x.id+'|1"'+(last?' disabled':'')+'>'+ic('ui-down','s')+' Xuống</button></div>'+
     '<div class="mg-btns"><button data-adj="'+x.id+'|'+dayKey()+'">'+ic('ui-settings','s')+' Điều chỉnh</button><button data-edit="'+x.id+'">'+ic('ui-edit','s')+' Sửa</button><button data-arch="'+x.id+'">'+ic('ui-archive','s')+' Lưu trữ</button><button class="btn-danger" data-del="'+x.id+'">'+ic('ui-trash','s')+' Xóa</button></div></div>'});
   if(!act.length)h+='<div class="empty">Chưa có thói quen nào. Bấm "Thêm thói quen" để bắt đầu.</div>';
   if(arc.length){h+='<div class="day-head">Đã lưu trữ</div><div class="group">';
@@ -94,15 +95,15 @@ function adjHtml(h,key){adjCtx={id:h.id};
   return '<div class="f"><h2 class="h-date">Điều chỉnh</h2><p class="h-sub">'+esc(h.name)+'</p><div class="fcard" style="margin-top:12px">'+
   '<div class="field"><label for="a-date">Ngày</label><input type="date" id="a-date" value="'+key+'" max="'+dayKey()+'"></div>'+
   '<div class="seg" data-seg="atg"><button type="button" data-v="v" class="is-on">Số lần</button><button type="button" data-v="p">Điểm</button></div>'+
-  '<div class="seg" data-seg="amd" style="margin-top:10px"><button type="button" data-v="set" class="is-on">Đặt thành</button><button type="button" data-v="add">Cộng / trừ</button></div>'+
-  '<div class="field" style="margin-top:12px"><label for="a-n" id="a-lab"></label><input type="number" inputmode="numeric" id="a-n" value="0"><small id="a-prev"></small></div>'+
+  '<div class="seg" data-seg="amd" style="margin-top:10px"><button type="button" data-v="set" class="is-on">Đặt thành</button><button type="button" data-v="add">Cộng thêm</button><button type="button" data-v="sub">Trừ bớt</button></div>'+
+  '<div class="field" style="margin-top:12px"><label for="a-n" id="a-lab"></label><input type="text" inputmode="numeric" pattern="[0-9]*" id="a-n" value="0"><small id="a-prev"></small></div>'+
   '<div class="field"><label for="a-note">Lý do (không bắt buộc)</label><input type="text" id="a-note" maxlength="80" placeholder="Ví dụ: quên bấm hôm qua"></div></div>'+
   '<div class="fsave"><button class="btn btn-primary" data-adj-save style="width:100%">Lưu điều chỉnh</button></div></div>'}
 function adjRead(){const q=k=>document.querySelector('.seg[data-seg="'+k+'"] .is-on').dataset.v;return{key:$('#a-date').value||dayKey(),tg:q('atg'),md:q('amd')}}
 function adjCalc(){const h=D.habits.find(x=>x.id===adjCtx.id),r=adjRead(),c=adjCur(h,r.key),cur=r.tg==='v'?c.v:c.p,n=Math.round(+$('#a-n').value);
-  return{h,r,cur,u:r.tg==='v'?unitOf(h):'điểm',n,d:isNaN(n)?0:(r.md==='set'?n-cur:n)}}
+  return{h,r,cur,u:r.tg==='v'?unitOf(h):'điểm',n,d:isNaN(n)?0:(r.md==='set'?n-cur:r.md==='sub'?-n:n)}}
 function adjRefresh(reset){if(!adjCtx||!$('#a-n'))return;let a=adjCalc();if(reset){$('#a-n').value=a.r.md==='set'?a.cur:0;a=adjCalc()}
-  $('#a-lab').textContent=a.r.md==='set'?'Số mới ('+a.u+')':'Cộng thêm, nhập số âm để trừ ('+a.u+')';
+  $('#a-lab').textContent=(a.r.md==='set'?'Số mới':a.r.md==='sub'?'Trừ bớt':'Cộng thêm')+' ('+a.u+')';
   $('#a-prev').textContent='Hiện tại '+a.cur+' '+a.u+' → sau khi chỉnh '+Math.max(0,a.cur+a.d)+' '+a.u+(a.d?' ('+(a.d>0?'+':'−')+Math.abs(a.d)+')':'')}
 function rStats(){const st=streaks(),n=new Date(),y=n.getFullYear(),m=n.getMonth(),dim=new Date(y,m+1,0).getDate(),off=(new Date(y,m,1).getDay()+6)%7,td=dayKey();if(!statDay)statDay=td;
   let h='<h1 class="h-date">Thống kê</h1><div class="stat-row"><div>'+ic('ui-flame')+'<b>'+st.cur+'</b><span>ngày liên tiếp</span></div><i></i><div><b>'+st.best+'</b><span>ngày dài nhất</span></div></div>';
@@ -129,7 +130,7 @@ const R={habits:rHabits,manage:rManage,history:rHistory,stats:rStats,settings:rS
 function formHtml(x){const isNew=!x;x=x||{name:'',icon:'h-star',kind:'count',unit:'lần',step:1,goal:1,mode:'log',limit:0};
   const L=lvsOf(x.id?x:{th:10,inc:5}),nm=D.cfg.names;
   const seg=(k,o,c)=>'<div class="seg" data-seg="'+k+'">'+o.map(a=>'<button type="button" data-v="'+a[0]+'" class="'+(a[0]==c?'is-on':'')+'">'+a[1]+'</button>').join('')+'</div>';
-  const num=(id,l,v,m,s,cls)=>'<div class="field '+(cls||'')+'"><label for="'+id+'">'+l+'</label><input type="number" inputmode="numeric" id="'+id+'" min="'+m+'" value="'+v+'">'+(s?'<small>'+s+'</small>':'')+'</div>';
+  const num=(id,l,v,m,s,cls)=>'<div class="field '+(cls||'')+'"><label for="'+id+'">'+l+'</label><input type="text" inputmode="numeric" pattern="[0-9]*" id="'+id+'" min="'+m+'" value="'+v+'">'+(s?'<small>'+s+'</small>':'')+'</div>';
   const lab=['Thăng cấp 1: '+nm[0]+' → '+nm[1],'Thăng cấp 2: '+nm[1]+' → '+nm[2],'Thăng cấp 3: '+nm[2]+' → '+nm[3],'Mỗi ★ sau '+nm[3]];
   return '<div class="f" id="fform" data-kind="'+x.kind+'"><h2 class="h-date">'+(x.id?'Sửa':'Thêm')+' thói quen</h2>'+
   '<div class="fcard"><h3 class="fsec">Thông tin</h3><div class="field"><label for="f-name">Tên</label><input type="text" id="f-name" maxlength="40" value="'+esc(x.name)+'"></div>'+
@@ -141,7 +142,7 @@ function formHtml(x){const isNew=!x;x=x||{name:'',icon:'h-star',kind:'count',uni
   '<small class="hint">Mỗi lần: 1 lần ghi nhận = 1 điểm. Mỗi ngày: đạt mục tiêu = 1 điểm. Theo lượng: điểm bằng tổng lượng.</small>'+
   '<div style="margin-top:12px">'+num('f-limit','Điểm tối đa mỗi ngày',x.limit,0,'Nhập 0 = không giới hạn')+'</div></div>'+
   '<details class="fcard xpd"><summary><span>Điểm cần thăng cấp</span><small>'+esc(nm[0])+' → '+esc(nm[11])+'</small>'+ic('ui-down','s')+'</summary>'+
-  '<div class="qf"><div class="field"><label for="f-fb">Cấp đầu</label><input type="number" inputmode="numeric" id="f-fb" min="1" value="'+L[0]+'"></div><div class="field"><label for="f-fi">Mỗi cấp thêm</label><input type="number" inputmode="numeric" id="f-fi" min="0" value="'+Math.max(0,L[1]-L[0])+'"></div><button type="button" class="btn" data-fill>Điền nhanh</button></div>'+
-  L.map((v,i)=>'<div class="lr2"><label for="f-l'+i+'">'+(i<11?esc(nm[i])+' → '+esc(nm[i+1]):'Mỗi ★ sau '+esc(nm[11]))+'</label><input class="lvin" type="number" inputmode="numeric" id="f-l'+i+'" min="1" value="'+v+'"></div>').join('')+
+  '<div class="qf"><div class="field"><label for="f-fb">Cấp đầu</label><input type="text" inputmode="numeric" pattern="[0-9]*" id="f-fb" min="1" value="'+L[0]+'"></div><div class="field"><label for="f-fi">Mỗi cấp thêm</label><input type="text" inputmode="numeric" pattern="[0-9]*" id="f-fi" min="0" value="'+Math.max(0,L[1]-L[0])+'"></div><button type="button" class="btn" data-fill>Điền nhanh</button></div>'+
+  L.map((v,i)=>'<div class="lr2"><label for="f-l'+i+'">'+(i<11?esc(nm[i])+' → '+esc(nm[i+1]):'Mỗi ★ sau '+esc(nm[11]))+'</label><input class="lvin" type="text" inputmode="numeric" pattern="[0-9]*" id="f-l'+i+'" min="1" value="'+v+'"></div>').join('')+
   '<small class="hint"><a href="#" data-th2>Chế độ thử hiệu ứng: đặt tất cả = 2</a></small></details>'+
   '<div class="fsave"><button class="btn btn-primary" data-save="'+(x.id||'')+'" style="width:100%">Lưu</button></div></div>'}

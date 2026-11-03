@@ -77,3 +77,7 @@ function adjSave(){const a=adjCalc();if(isNaN(a.n)){toast('Hãy nhập một s�
   const l=addAdj(a.h,o);adjCtx=null;closeSheet();render();showUndo(()=>{removeLog(l.id);render()})}
 document.addEventListener('change',e=>{if(e.target.id==='a-date')adjRefresh(true)});
 document.addEventListener('input',e=>{if(e.target.id==='a-n')adjRefresh(false)});
+
+/* Ô nhập số: khi chạm vào, con trỏ đặt ở CUỐI số (ví dụ 23|); chỉ nhận chữ số */
+document.addEventListener('focusin',e=>{const t=e.target;if(t.matches&&t.matches('input[inputmode="numeric"]'))setTimeout(()=>{try{t.setSelectionRange(t.value.length,t.value.length)}catch(_){}},0)});
+document.addEventListener('input',e=>{const t=e.target;if(t.matches&&t.matches('input[inputmode="numeric"]')&&/\D/.test(t.value))t.value=t.value.replace(/\D/g,'')});
