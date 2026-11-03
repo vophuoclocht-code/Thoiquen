@@ -25,10 +25,10 @@ function badge(lv){const L=lv-1,x=42;
     g+='<circle cx="'+x+'" cy="'+y.toFixed(1)+'" r="'+(r*2.6).toFixed(1)+'" fill="url(#bdg)" opacity="'+(.3+L*.1).toFixed(2)+'"/><circle cx="'+x+'" cy="'+y.toFixed(1)+'" r="'+r.toFixed(1)+'" fill="'+f+'"/><circle cx="'+(x-r*.3).toFixed(1)+'" cy="'+(y-r*.3).toFixed(1)+'" r="'+(r*.35).toFixed(1)+'" fill="#fff" opacity=".85"/>';
   }else{const k=L-6,y=26,r=[11,11,11,12,14,19][k],n=[0,4,8,8,8,0][k],gat=[0,0,0,.45,.8,1][k];
     const S=[[12,10],[72,9],[16,44],[69,46],[7,27],[78,26],[31,6],[56,53]];
-    for(let i=0;i<n;i++){const px=x+(S[i][0]-x)*(1-gat),py=y+(S[i][1]-y)*(1-gat);g+=st(px.toFixed(1),py.toFixed(1),2.4+(i%3)*.5,'#fff6c9',.95)}
+    for(let i=0;i<n;i++){const px=x+(S[i][0]-x)*(1-gat),py=y+(S[i][1]-y)*(1-gat);g+=st(+px.toFixed(1),+py.toFixed(1),2.4+(i%3)*.5,'#fff6c9',.95)}
     if(k===0)g+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*1.9)+'" fill="none" stroke="#fff0b3" stroke-width="1" opacity=".55"/>';
     g+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*(k===5?3:2.2)).toFixed(1)+'" fill="url(#bdg)" opacity="'+[.6,.65,.7,.78,.88,.98][k]+'"/>';
-    if(k>=3)g+='<path d="M'+x+' '+(y-r*2.4)+'V'+(y+r*2.4)+'M'+(x-r*2.4)+' '+y+'H'+(x+r*2.4)+(k===5?'M'+(x-r*1.4)+' '+(y-r*1.4)+'L'+(x+r*1.4)+' '+(y+r*1.4)+'M'+(x+r*1.4)+' '+(y-r*1.4)+'L'+(x-r*1.4)+' '+(y+r*1.4):'')+'" stroke="#fff6c9" stroke-width=".8" opacity=".75"/>';
+    if(k>=3)g+='<path d="M'+x+' '+(y-r*2.4)+'V'+(y+r*2.4)+'M'+(x-r*2.4)+' '+y+'H'+(x+r*2.4)+(k===5?[[-1,-1],[1,-1],[-1,1],[1,1]].map(d=>'M'+(x+d[0]*r*.85).toFixed(1)+' '+(y+d[1]*r*.85).toFixed(1)+'L'+(x+d[0]*r*1.35).toFixed(1)+' '+(y+d[1]*r*1.35).toFixed(1)).join(''):'')+'" stroke="#fff6c9" stroke-width=".8" stroke-linecap="round" opacity=".75"/>';
     g+=st(x,y,r,mix('#ffe08a','#fffbe0',k/5))}
   return g+'</svg>'}
 function ringSvg(p){return '<svg class="ring" viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" fill="none" stroke="#eee7fa" stroke-width="7"/><circle cx="32" cy="32" r="26" fill="none" stroke="url(#gp)" stroke-width="7" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="'+(163.4*(1-p)).toFixed(1)+'" transform="rotate(-90 32 32)"/></svg>'}
