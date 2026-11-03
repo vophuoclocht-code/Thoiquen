@@ -387,3 +387,9 @@ details>summary::-webkit-details-marker{display:none}
 .lr2{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
 .lr2 label{flex:1;font-size:.9rem}.lr2 input{width:92px;min-height:42px;text-align:right}
 details.group>summary.row{font-weight:600}
+
+/* ===== v14: huy hiệu phủ kín 84x84, tên cấp đè lên bằng lớp mờ (không còn dải tối giống mặt nước) ===== */
+.habit .badge{position:relative;height:84px}
+.habit .badge svg{height:84px}
+.habit .badge span,.habit[data-lv] .badge span{position:absolute;left:0;right:0;bottom:0;margin:0;padding:12px 2px 4px;
+  background:linear-gradient(180deg,rgba(35,10,90,0),rgba(35,10,90,.72) 60%);text-shadow:0 1px 3px rgba(20,0,60,.8)}

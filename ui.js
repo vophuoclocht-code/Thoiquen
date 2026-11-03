@@ -10,25 +10,31 @@ const hx=c=>[1,3,5].map(i=>parseInt(c.substr(i,2),16)),mix=(a,b,t)=>{const A=hx(
 const ANC=[['#6D28D9','#A855F7'],['#B02ACB','#EC4899'],['#F97316','#FBBF24'],['#FCD34D','#FFF7D1']];
 function lvCol(L){const p=L/11*3,i=Math.min(2,Math.floor(p)),t=p-i;return [mix(ANC[i][0],ANC[i+1][0],t),mix(ANC[i][1],ANC[i+1][1],t)]}
 function lvStyle(L){const c=lvCol(L);return '--c0:'+c[0]+';--c1:'+c[1]+';--gl:'+c[1]+';--fg:'+(L>=7?'#331400':'#fff')}
-/* Huy hiệu = cảnh.
-   Cấp 1-5: hạt sáng nổi từ mặt nước, bay dần lên (có nước).  Cấp 6 Bỉ Ngạn: hạt sáng ở không trung, nền chỉ còn bầu trời.
-   7 Tinh Huy: hóa thành 1 ngôi sao 4 cánh.  8 Chiếu Thế → 9 Vạn Tượng: thêm nhiều sao con.
-   10 Pháp Tướng → 11 Quy Chân: các sao tụ dần về giữa.  12 Kim Tính: hợp thành 1 ngôi sao sáng nhất. */
+/* Huy hiệu = cảnh phủ kín ô 84x84, tên cấp đè lên bằng lớp mờ.
+   Cấp 1 Khổ Hải: quả cầu chìm dưới nước, sóng gợn Ở PHÍA TRƯỚC.  Cấp 2-5: nổi lên, bay cao dần.
+   Cấp 6 Bỉ Ngạn trở đi: chỉ còn bầu trời, không có nước.
+   7 Tinh Huy: 1 ngôi sao 4 cánh.  8-9: thêm sao con.  10 Pháp Tướng: sao con xếp thành vòng tròn quanh sao chính.
+   11 Quy Chân: vòng tròn khép lại, có đường tròn bao quanh.  12 Kim Tính: hợp thành 1 ngôi sao ở chính giữa, 8 tia sáng đều nhau. */
 function badge(lv){const L=lv-1,x=42;
   const st=(cx,cy,s,fl,o)=>'<path d="M'+cx+' '+(cy-s)+'Q'+(cx+s*.2)+' '+(cy-s*.2)+' '+(cx+s)+' '+cy+'Q'+(cx+s*.2)+' '+(cy+s*.2)+' '+cx+' '+(cy+s)+'Q'+(cx-s*.2)+' '+(cy+s*.2)+' '+(cx-s)+' '+cy+'Q'+(cx-s*.2)+' '+(cy-s*.2)+' '+cx+' '+(cy-s)+'z" fill="'+fl+'"'+(o?' opacity="'+o+'"':'')+'/>';
-  const rip=o=>{let s='';for(let i=0;i<3;i++){const w=9+i*8,yy=46+i*5;s+='<path d="M'+(x-w)+' '+yy+'A'+w+' '+(2.4+i*1.2)+' 0 0 0 '+(x+w)+' '+yy+'" fill="none" stroke="#ffc457" stroke-width="1.4" stroke-linecap="round" opacity="'+Math.max(0,o*(1-i*.2)).toFixed(2)+'"/>'}return s};
-  let g='<svg viewBox="0 0 84 62" aria-hidden="true"><defs><linearGradient id="bdk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a24b0"/><stop offset="1" stop-color="#e060c4"/></linearGradient><linearGradient id="bdw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a58f0"/><stop offset="1" stop-color="#5b25ad"/></linearGradient><radialGradient id="bdg"><stop offset="0" stop-color="#fff6c9" stop-opacity=".95"/><stop offset="1" stop-color="#ffd24d" stop-opacity="0"/></radialGradient></defs>';
-  g+=L<=4?'<rect width="84" height="42" fill="url(#bdk)"/><rect y="42" width="84" height="20" fill="url(#bdw)"/>':'<rect width="84" height="62" fill="url(#bdk)"/>';
-  if(L<=5){const h=L/5,y=46-26*h,r=4.2+L*.5,f=mix('#ffc4ec','#ffe9a0',h);
-    if(L<=4)g+=rip(.9-L*.18);
-    for(let i=1;i<=Math.min(L,3);i++)g+='<circle cx="'+x+'" cy="'+(y+r+i*4.5).toFixed(1)+'" r="'+(1.7-i*.3).toFixed(1)+'" fill="#ffd24d" opacity="'+(.65-i*.15).toFixed(2)+'"/>';
-    g+='<circle cx="'+x+'" cy="'+y.toFixed(1)+'" r="'+(r*2.6).toFixed(1)+'" fill="url(#bdg)" opacity="'+(.3+L*.1).toFixed(2)+'"/><circle cx="'+x+'" cy="'+y.toFixed(1)+'" r="'+r.toFixed(1)+'" fill="'+f+'"/><circle cx="'+(x-r*.3).toFixed(1)+'" cy="'+(y-r*.3).toFixed(1)+'" r="'+(r*.35).toFixed(1)+'" fill="#fff" opacity=".85"/>';
-  }else{const k=L-6,y=26,r=[11,11,11,12,14,19][k],n=[0,4,8,8,8,0][k],gat=[0,0,0,.45,.8,1][k];
-    const S=[[12,10],[72,9],[16,44],[69,46],[7,27],[78,26],[31,6],[56,53]];
-    for(let i=0;i<n;i++){const px=x+(S[i][0]-x)*(1-gat),py=y+(S[i][1]-y)*(1-gat);g+=st(+px.toFixed(1),+py.toFixed(1),2.4+(i%3)*.5,'#fff6c9',.95)}
+  const rip=o=>[[8,2.4],[15,4],[22,5.6]].map((e,i)=>'<ellipse cx="'+x+'" cy="50" rx="'+e[0]+'" ry="'+e[1]+'" fill="none" stroke="#ffc457" stroke-width="1.4" opacity="'+Math.max(0,o*(1-i*.2)).toFixed(2)+'"/>').join('');
+  let g='<svg viewBox="0 0 84 84" aria-hidden="true"><defs><linearGradient id="bdk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a24b0"/><stop offset="1" stop-color="#e060c4"/></linearGradient><linearGradient id="bdw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a58f0"/><stop offset="1" stop-color="#5b25ad"/></linearGradient><radialGradient id="bdg"><stop offset="0" stop-color="#fff6c9" stop-opacity=".95"/><stop offset="1" stop-color="#ffd24d" stop-opacity="0"/></radialGradient></defs>';
+  g+=L<=4?'<rect width="84" height="44" fill="url(#bdk)"/><rect y="44" width="84" height="40" fill="url(#bdw)"/>':'<rect width="84" height="84" fill="url(#bdk)"/>';
+  if(L<=5){const y=[56,45,40,36,33,31][L],r=4.2+L*.5,f=mix('#ffc4ec','#ffe9a0',L/5);
+    for(let i=1;i<=Math.min(L-1,3);i++)g+='<circle cx="'+x+'" cy="'+(y+r+i*4.5).toFixed(1)+'" r="'+(1.7-i*.3).toFixed(1)+'" fill="#ffd24d" opacity="'+(.65-i*.15).toFixed(2)+'"/>';
+    g+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*2.6).toFixed(1)+'" fill="url(#bdg)" opacity="'+(L===0?.2:.3+L*.1).toFixed(2)+'"/><circle cx="'+x+'" cy="'+y+'" r="'+r.toFixed(1)+'" fill="'+f+'"/><circle cx="'+(x-r*.3).toFixed(1)+'" cy="'+(y-r*.3).toFixed(1)+'" r="'+(r*.35).toFixed(1)+'" fill="#fff" opacity=".85"/>';
+    if(L===0)g+='<rect y="44" width="84" height="40" fill="#8a4ee6" opacity=".4"/>'; /* lớp nước phủ lên: quả cầu nằm dưới nước */
+    if(L<=4)g+=rip(.95-L*.18); /* sóng vẽ SAU quả cầu = ở phía trước */
+  }else{const k=L-6,y=31,r=[11,11,11,12,13,16][k];
+    const S=[[12,12],[72,11],[14,48],[70,49],[7,30],[78,31],[31,7],[54,56]];
+    let pts=k===1?S.slice(0,4):k===2?S:[];
+    if(k===3||k===4){const R=k===3?27:21;pts=Array.from({length:8},(_,i)=>{const a=-Math.PI/2+i*Math.PI/4;return [x+R*Math.cos(a),y+R*Math.sin(a)]});
+      g+='<circle cx="'+x+'" cy="'+y+'" r="'+R+'" fill="none" stroke="#fff6c9" stroke-width=".9" opacity="'+(k===3?.25:.5)+'"/>'}
+    pts.forEach((p,i)=>{g+=st(+p[0].toFixed(1),+p[1].toFixed(1),2.5+(i%2)*.5,'#fff6c9',.95)});
     if(k===0)g+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*1.9)+'" fill="none" stroke="#fff0b3" stroke-width="1" opacity=".55"/>';
-    g+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*(k===5?3:2.2)).toFixed(1)+'" fill="url(#bdg)" opacity="'+[.6,.65,.7,.78,.88,.98][k]+'"/>';
-    if(k>=3)g+='<path d="M'+x+' '+(y-r*2.4)+'V'+(y+r*2.4)+'M'+(x-r*2.4)+' '+y+'H'+(x+r*2.4)+(k===5?[[-1,-1],[1,-1],[-1,1],[1,1]].map(d=>'M'+(x+d[0]*r*.85).toFixed(1)+' '+(y+d[1]*r*.85).toFixed(1)+'L'+(x+d[0]*r*1.35).toFixed(1)+' '+(y+d[1]*r*1.35).toFixed(1)).join(''):'')+'" stroke="#fff6c9" stroke-width=".8" stroke-linecap="round" opacity=".75"/>';
+    g+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*(k===5?3:2.2)).toFixed(1)+'" fill="url(#bdg)" opacity="'+[.6,.65,.7,.75,.85,.98][k]+'"/>';
+    if(k===5){let d='';for(let i=0;i<8;i++){const a=i*Math.PI/4,c=Math.cos(a),s=Math.sin(a);d+='M'+(x+r*1.25*c).toFixed(1)+' '+(y+r*1.25*s).toFixed(1)+'L'+(x+r*1.7*c).toFixed(1)+' '+(y+r*1.7*s).toFixed(1)}
+      g+='<path d="'+d+'" stroke="#fff6c9" stroke-width="1" stroke-linecap="round" opacity=".8"/>'}
     g+=st(x,y,r,mix('#ffe08a','#fffbe0',k/5))}
   return g+'</svg>'}
 function ringSvg(p){return '<svg class="ring" viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" fill="none" stroke="#eee7fa" stroke-width="7"/><circle cx="32" cy="32" r="26" fill="none" stroke="url(#gp)" stroke-width="7" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="'+(163.4*(1-p)).toFixed(1)+'" transform="rotate(-90 32 32)"/></svg>'}
