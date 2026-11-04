@@ -62,7 +62,6 @@ document.addEventListener('change',e=>{const t=e.target;
   else if(t.dataset.import!==undefined&&t.files[0]){const r=new FileReader();r.onload=()=>{const err=importJSON(r.result);err?toast(err):(toast('Đã nhập dữ liệu'),render())};r.readAsText(t.files[0])}});
 /* Khởi động */
 load();document.body.classList.toggle('reduce-motion',D.cfg.reduce);go('habits');
-setTimeout(()=>{const s=$('#splash');if(s)s.remove()},800);
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js');
 

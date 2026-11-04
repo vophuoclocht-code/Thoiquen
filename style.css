@@ -28,7 +28,7 @@ input,select,textarea{font:inherit;font-size:16px;color:var(--ink)}
 #main{height:100%;overflow:hidden}
 .screen{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding:calc(var(--s4) + env(safe-area-inset-top)) var(--s4) calc(var(--tab-h) + 96px + env(safe-area-inset-bottom));
-  animation:enter .22s ease-out}
+  animation:none}
 @keyframes enter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .h-date{margin:0 0 var(--s1);font:600 1.35rem/1.2 var(--serif)}
 .h-sub{margin:0;color:var(--ink2);font-size:.9rem}
