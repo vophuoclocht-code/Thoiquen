@@ -22,6 +22,21 @@ function queueFx(id,from,to){fxQ=fxQ.then(()=>new Promise(res=>{const c=document
 function doAdd(id){const h=D.habits.find(x=>x.id===id);if(!h)return;const b=stat(h),l=addLog(h,h.kind==='amount'?h.step:1);
   if(!l){toast('Đã đủ hôm nay');return}vib(15);const a=stat(h);render();const c=document.querySelector('.habit[data-id="'+id+'"]');if(c){const p=document.createElement('i');p.className='pop';p.textContent='+'+l.v;c.appendChild(p);setTimeout(()=>p.remove(),700)}showUndo(()=>{removeLog(l.id);render()});if(a.lv>b.lv)queueFx(id,b.lv,a.lv)}
 function doMinus(id){const h=D.habits.find(x=>x.id===id),l=h&&lastToday(h);if(!l){toast('Hôm nay chưa có gì để trừ');return}removeLog(l.id);vib(15);render();showUndo(()=>{D.log.push(l);save();render()})}
+/* Mở/đóng mô tả: khung được KÉO XUỐNG từ đáy thẻ, bấm lần nữa thì KÉO LÊN chui vào sau thẻ.
+   Chiều cao vùng chứa và độ trượt của khung chạy cùng một nhịp (cùng thời lượng, cùng đường cong) → mép dưới khung luôn khớp mép dưới vùng chứa,
+   các thẻ bên dưới dịch xuống/lên đúng bằng phần khung đã lộ ra. Bấm giữa chừng thì đảo chiều mượt từ vị trí hiện tại. */
+function toggleDesc(btn){const id=btn.dataset.info,o=descOpen[id]=!descOpen[id],d=document.querySelector('[data-desc="'+id+'"]');
+  btn.classList.toggle('is-open',o);btn.setAttribute('aria-expanded',o);if(!d)return;
+  const inn=d.querySelector('.h-desc-in'),box=d.querySelector('.h-desc-box'),
+    still=D.cfg.reduce||matchMedia('(prefers-reduced-motion:reduce)').matches||!inn.animate,
+    from=inn.getBoundingClientRect().height; /* đo TRƯỚC khi đổi trạng thái (kể cả đang chạy dở) */
+  inn.getAnimations().forEach(a=>a.cancel());box.getAnimations().forEach(a=>a.cancel());
+  d.classList.toggle('is-open',o);
+  if(still)return;
+  const H=box.offsetHeight,tuck=parseFloat(getComputedStyle(d).getPropertyValue('--tuck'))||14,to=o?H:tuck,
+    opt={duration:320,easing:'cubic-bezier(.3,.7,.2,1)'};
+  inn.animate([{height:from+'px'},{height:to+'px'}],opt);
+  box.animate([{transform:'translateY('+(from-H)+'px)'},{transform:'translateY('+(to-H)+'px)'}],opt)}
 /* Chạm khung = cộng. Giữ 0,55 giây = trừ. Kéo/cuộn quá 10px thì hủy */
 let pt=null,dId=null,sx=0,sy=0,moved=false,longHit=false;
 document.addEventListener('pointerdown',e=>{if(e.target.closest('.h-info'))return;const c=e.target.closest('.habit');if(!c)return;dId=c.dataset.id;sx=e.clientX;sy=e.clientY;moved=false;longHit=false;
@@ -31,7 +46,7 @@ document.addEventListener('pointerup',()=>{clearTimeout(pt);pt=null;const id=dId
 document.addEventListener('pointercancel',()=>{clearTimeout(pt);pt=null;dId=null});
 document.addEventListener('contextmenu',e=>{if(e.target.closest('.habit'))e.preventDefault()});
 document.addEventListener('click',e=>{const t=e.target,q=s=>t.closest(s);let m;
-  if(m=q('[data-info]')){const id=m.dataset.info,o=descOpen[id]=!descOpen[id];m.classList.toggle('is-open',o);m.setAttribute('aria-expanded',o);const d=document.querySelector('[data-desc="'+id+'"]');if(d)d.classList.toggle('is-open',o)}
+  if(m=q('[data-info]'))toggleDesc(m)
   else if(m=q('[data-tab]'))go(m.dataset.tab);
   else if(m=q('.seg button')){const g=m.parentNode;g.querySelectorAll('button').forEach(b=>b.classList.toggle('is-on',b===m));if(g.dataset.seg==='kind')$('#fform').dataset.kind=m.dataset.v;else if(g.dataset.seg==='atg'||g.dataset.seg==='amd')adjRefresh(true)}
   else if(m=q('[data-hx]')){histOpen[m.dataset.hx]=!histOpen[m.dataset.hx];render()}
