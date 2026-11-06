@@ -24,14 +24,15 @@ function doAdd(id){const h=D.habits.find(x=>x.id===id);if(!h)return;const b=stat
 function doMinus(id){const h=D.habits.find(x=>x.id===id),l=h&&lastToday(h);if(!l){toast('Hôm nay chưa có gì để trừ');return}removeLog(l.id);vib(15);render();showUndo(()=>{D.log.push(l);save();render()})}
 /* Chạm khung = cộng. Giữ 0,55 giây = trừ. Kéo/cuộn quá 10px thì hủy */
 let pt=null,dId=null,sx=0,sy=0,moved=false,longHit=false;
-document.addEventListener('pointerdown',e=>{const c=e.target.closest('.habit');if(!c)return;dId=c.dataset.id;sx=e.clientX;sy=e.clientY;moved=false;longHit=false;
+document.addEventListener('pointerdown',e=>{if(e.target.closest('.h-info'))return;const c=e.target.closest('.habit');if(!c)return;dId=c.dataset.id;sx=e.clientX;sy=e.clientY;moved=false;longHit=false;
   pt=setTimeout(()=>{pt=null;if(!moved){longHit=true;doMinus(dId)}},550)});
 document.addEventListener('pointermove',e=>{if(dId&&!moved&&Math.hypot(e.clientX-sx,e.clientY-sy)>10){moved=true;clearTimeout(pt);pt=null}});
 document.addEventListener('pointerup',()=>{clearTimeout(pt);pt=null;const id=dId;dId=null;if(id&&!moved&&!longHit)doAdd(id)});
 document.addEventListener('pointercancel',()=>{clearTimeout(pt);pt=null;dId=null});
 document.addEventListener('contextmenu',e=>{if(e.target.closest('.habit'))e.preventDefault()});
 document.addEventListener('click',e=>{const t=e.target,q=s=>t.closest(s);let m;
-  if(m=q('[data-tab]'))go(m.dataset.tab);
+  if(m=q('[data-info]')){const id=m.dataset.info,o=descOpen[id]=!descOpen[id];m.classList.toggle('is-open',o);m.setAttribute('aria-expanded',o);const d=document.querySelector('[data-desc="'+id+'"]');if(d)d.classList.toggle('is-open',o)}
+  else if(m=q('[data-tab]'))go(m.dataset.tab);
   else if(m=q('.seg button')){const g=m.parentNode;g.querySelectorAll('button').forEach(b=>b.classList.toggle('is-on',b===m));if(g.dataset.seg==='kind')$('#fform').dataset.kind=m.dataset.v;else if(g.dataset.seg==='atg'||g.dataset.seg==='amd')adjRefresh(true)}
   else if(m=q('[data-hx]')){histOpen[m.dataset.hx]=!histOpen[m.dataset.hx];render()}
   else if(m=q('[data-hd]')){statDay=m.dataset.hd;render()}
@@ -46,7 +47,7 @@ document.addEventListener('click',e=>{const t=e.target,q=s=>t.closest(s);let m;
   else if(m=q('[data-save]')){const name=cut5($('#f-name').value.replace(/\s+/g,' ').trim()),n=(id,d)=>{const v=Math.floor(+$('#'+id).value);return isNaN(v)||v<0?d:v},sg=k=>document.querySelector('.seg[data-seg="'+k+'"] .is-on').dataset.v;
     if(!name){toast('Hãy nhập tên thói quen');return}
     const lvs=Array.from({length:12},(_,i)=>Math.max(1,n('f-l'+i,10))),kind=sg('kind');
-    const o={name,icon:selIcon,kind,unit:$('#f-unit').value.trim(),step:kind==='count'?1:Math.max(1,n('f-step',1)),goal:n('f-goal',1),mode:sg('mode'),limit:n('f-limit',0),lvs,th:lvs[0]};
+    const o={name,icon:selIcon,kind,unit:$('#f-unit').value.trim(),desc:$('#f-desc').value.trim(),step:kind==='count'?1:Math.max(1,n('f-step',1)),goal:n('f-goal',1),mode:sg('mode'),limit:n('f-limit',0),lvs,th:lvs[0]};
     const x=D.habits.find(h=>h.id===m.dataset.save);if(x)Object.assign(x,o);else D.habits.push(Object.assign({id:uid()},o));save();closeSheet();render()}
   else if(m=q('[data-move]')){const p=m.dataset.move.split('|');moveHabit(p[0],p[1]);render()}
   else if(m=q('[data-arch]')){const x=D.habits.find(h=>h.id===m.dataset.arch);x.arch=!x.arch;save();render();toast(x.arch?'Đã lưu trữ':'Đã khôi phục')}
@@ -68,7 +69,7 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js');
 document.addEventListener('input',e=>{if(/^f-l\d$/.test(e.target.id))updateXp()});
 /* Tên thói quen tối đa 5 chữ (tính theo từ cách nhau bởi dấu cách) */
 const MAXW=5,cut5=v=>{const w=v.split(/\s+/).filter(Boolean);return w.length>MAXW?w.slice(0,MAXW).join(' '):v};
-document.addEventListener('input',e=>{const t=e.target;if(t.id==='f-name'){const c=cut5(t.value);if(c!==t.value){t.value=c;toast('Tên tối đa '+MAXW+' chữ')}}});
+document.addEventListener('input',e=>{const t=e.target;if(t.id==='f-desc'){t.style.height='auto';t.style.height=t.scrollHeight+'px'}if(t.id==='f-name'){const c=cut5(t.value);if(c!==t.value){t.value=c;toast('Tên tối đa '+MAXW+' chữ')}}});
 
 function adjSave(){const a=adjCalc();if(isNaN(a.n)){toast('Hãy nhập một số');return}
   if(a.r.md==='set'&&a.n<0){toast('Số mới không được âm');return}

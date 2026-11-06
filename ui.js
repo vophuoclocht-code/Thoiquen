@@ -54,7 +54,8 @@ function rHabits(){const hs=D.habits.filter(h=>!h.arch),n=new Date(),nm=D.cfg.na
     '<div class="badge">'+badge(s.lv)+bspan(nm[s.lv-1])+'</div>'+
     '<div class="hc"><div class="hrow"><div class="h-main"><div class="h-name" style="font-size:'+fs+'rem">'+nameIc(x,fs)+'<span>'+esc(x.name)+'</span></div>'+(sub?'<div class="h-sub2">'+sub+'</div>':'')+'</div>'+
     '<div class="count"><b class="cnum'+(len>=4?' xl':len==3?' l':'')+'">'+s.today.v+'</b><span>'+(x.goal>0?'/ '+x.goal+u:(x.unit?esc(x.unit):'hôm nay'))+'</span></div></div>'+
-    '<div class="pg"><div class="wave"><i style="--pct:'+(s.into/s.th*100).toFixed(1)+'%"></i></div><em class="pgn">'+s.into+'/'+s.th+(s.stars?' ★'+s.stars:'')+'</em></div></div></article>'}
+    '<div class="pg"><div class="wave"><i style="--pct:'+(s.into/s.th*100).toFixed(1)+'%"></i></div><em class="pgn">'+s.into+'/'+s.th+(s.stars?' ★'+s.stars:'')+'</em></div></div>'+'</article>'+
+    (x.desc?'<div class="h-desc'+(descOpen[x.id]?' is-open':'')+'" data-desc="'+x.id+'" style="'+lvStyle(s.lv-1)+'"><button type="button" class="h-info'+(descOpen[x.id]?' is-open':'')+'" data-info="'+x.id+'" aria-label="Xem mô tả" aria-expanded="'+(!!descOpen[x.id])+'"><svg class="h-tab" width="54" height="14" viewBox="0 0 54 14" aria-hidden="true"><path class="f" d="M0 0H54V2.5A5 5 0 0 0 49 7.5V8A5 5 0 0 1 44 13H10A5 5 0 0 1 5 8V7.5A5 5 0 0 0 0 2.5Z"/><path class="s" d="M0 2.5A5 5 0 0 1 5 7.5V8A5 5 0 0 0 10 13H44A5 5 0 0 0 49 8V7.5A5 5 0 0 1 54 2.5"/><g class="h-chev"><path d="M23.2 6.4L27 10.2L30.8 6.4"/></g></svg></button><div class="h-desc-in"><div class="h-desc-box">'+esc(x.desc)+'</div></div></div>':'')}
   return h}
 /* Tên thói quen (tối đa 5 chữ) + biểu tượng luôn nằm gọn trong chiều dài thanh tiến độ (cột h-main rộng đúng bằng thanh).
    Thứ tự thử: 1 dòng chữ to → 2 dòng → 3 dòng, chữ và biểu tượng thu nhỏ cùng nhau cho vừa khung. */
@@ -86,7 +87,7 @@ function rManage(){const act=D.habits.filter(x=>!x.arch),arc=D.habits.filter(x=>
   return h}
 const unitOf=x=>x.unit||'lần';
 const dLab=k=>{const t=dayKey(),y=dayKey(Date.now()-864e5);return k===t?'Hôm nay':k===y?'Hôm qua':k.slice(8)+'/'+k.slice(5,7)};
-let histOpen={},statDay=null;
+let histOpen={},statDay=null,descOpen={};
 /* Lịch sử: mỗi ngày gom theo thói quen, hiện tổng số lần nhấn; bấm vào để xem từng lần */
 function rHistory(){let h='<h1 class="h-date">Lịch sử</h1>';const L=D.log.slice().sort((a,b)=>b.t-a.t),by={};
   for(const l of L){const k=dayKey(l.t);by[k]=by[k]||{};(by[k][l.h]=by[k][l.h]||[]).push(l)}
@@ -150,6 +151,7 @@ function formHtml(x){const isNew=!x;x=x||{name:'',icon:'h-star',kind:'count',uni
   const lab=['Thăng cấp 1: '+nm[0]+' → '+nm[1],'Thăng cấp 2: '+nm[1]+' → '+nm[2],'Thăng cấp 3: '+nm[2]+' → '+nm[3],'Mỗi ★ sau '+nm[3]];
   return '<div class="f" id="fform" data-kind="'+x.kind+'"><h2 class="h-date">'+(x.id?'Sửa':'Thêm')+' thói quen</h2>'+
   '<div class="fcard"><h3 class="fsec">Thông tin</h3><div class="field"><label for="f-name">Tên</label><input type="text" id="f-name" maxlength="40" value="'+esc(x.name)+'"></div>'+
+  '<div class="field"><label for="f-desc">Mô tả (tuỳ chọn)</label><textarea id="f-desc" rows="3" placeholder="Ghi chú về thói quen này…">'+esc(x.desc||'')+'</textarea></div>'+
   '<div class="field" style="margin:0"><label>Biểu tượng</label><div class="icon-grid">'+HICONS.map(i=>'<button type="button" data-ic="'+i+'" class="'+(i===x.icon?'is-on':'')+'">'+ic(i)+'</button>').join('')+'</div></div></div>'+
   '<div class="fcard"><h3 class="fsec">Cách ghi nhận</h3>'+seg('kind',[['count','Đếm lần'],['amount','Theo lượng']],x.kind)+
   '<div class="g2" style="margin-top:12px"><div class="field"><label for="f-unit">Đơn vị</label><input type="text" id="f-unit" maxlength="12" placeholder="lần, ml, trang…" value="'+esc(x.unit)+'"></div>'+num('f-step','Cộng nhanh',x.step,1,'','only-amount')+'</div>'+
