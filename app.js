@@ -69,6 +69,8 @@ document.addEventListener('click',e=>{const t=e.target,q=s=>t.closest(s);let m;
   else if(m=q('[data-del]')){const id=m.dataset.del;confirmBox('Xóa thói quen này và toàn bộ lịch sử của nó?',()=>{D.habits=D.habits.filter(h=>h.id!==id);D.log=D.log.filter(l=>l.h!==id);save();render()})}
   else if(m=q('[data-hdel]')){const l=removeLog(m.dataset.hdel);render();if(l)showUndo(()=>{D.log.push(l);save();render()})}
   else if(q('#undo')){if(undoFn)undoFn();undoFn=null;$('#undo').hidden=true}
+  else if(q('[data-online]')){toggleOnline()}
+  else if(q('[data-update]')){doUpdate()}
   else if(m=q('[data-sw]')){const k=m.dataset.sw;D.cfg[k]=!D.cfg[k];save();document.body.classList.toggle('reduce-motion',D.cfg.reduce);render()}
   else if(q('[data-export]'))exportJSON();
   else if(q('[data-reset]'))confirmBox('Xóa toàn bộ dữ liệu?',()=>setTimeout(()=>confirmBox('Chắc chắn chứ? Không thể khôi phục.',()=>{D=DEF();save();render();toast('Đã xóa dữ liệu')}),50))});
@@ -76,10 +78,48 @@ document.addEventListener('change',e=>{const t=e.target;
   if(t.dataset.name!==undefined){D.cfg.names[+t.dataset.name]=t.value.trim()||D.cfg.names[+t.dataset.name];save()}
   else if(t.dataset.day!==undefined){D.cfg.dayStart=+t.value;save()}
   else if(t.dataset.import!==undefined&&t.files[0]){const r=new FileReader();r.onload=()=>{const err=importJSON(r.result);err?toast(err):(toast('Đã nhập dữ liệu'),render())};r.readAsText(t.files[0])}});
+/* ===== Chế độ online / cập nhật =====
+   Công tắc trong Cài đặt: BẬT → app báo service worker chuyển sang online và tự kiểm tra bản mới
+   (có thì tải về rồi tự tải lại trang). TẮT → quay về offline hoàn toàn (mặc định). */
+const tmo=(p,ms)=>Promise.race([p,new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),ms))]);
+function askSW(w,msg,ms){return new Promise(res=>{if(!w){res({ok:false});return}const ch=new MessageChannel(),t=setTimeout(()=>res({ok:false}),ms);
+  ch.port1.onmessage=e=>{clearTimeout(t);res(e.data||{ok:false})};w.postMessage(msg,[ch.port2])})}
+function syncMode(){if(!('serviceWorker' in navigator))return;
+  navigator.serviceWorker.ready.then(r=>{if(r.active)r.active.postMessage({type:'mode',mode:isOnline()?'online':'offline'})}).catch(()=>{})}
+function toggleOnline(){const on=!isOnline();try{localStorage.setItem('tq_online',on?'1':'0')}catch(e){}
+  syncMode();render();if(on)doUpdate();else toast('Đã về chế độ offline')}
+let updating=false;
+async function doUpdate(){
+  if(updating)return;
+  if(!('serviceWorker' in navigator)){toast('Trình duyệt không hỗ trợ cập nhật');return}
+  updating=true;toast('Đang kiểm tra bản mới…');
+  try{
+    const reg=await tmo(navigator.serviceWorker.ready,5000);
+    await tmo(reg.update(),15000);
+    const nw=reg.installing||reg.waiting;
+    if(nw){ /* sw.js có phiên bản mới: nó tự tải đủ file, tự kích hoạt */
+      toast('Đang tải bản mới…');
+      await tmo(new Promise((res,rej)=>{
+        if(nw.state==='activated'){res();return}
+        nw.addEventListener('statechange',()=>{if(nw.state==='activated')res();else if(nw.state==='redundant')rej(new Error('fail'))})}),30000);
+      toast('Đã cập nhật, đang mở lại…');setTimeout(()=>location.reload(),700);return}
+    /* sw.js không đổi → vẫn làm mới toàn bộ file lõi (phòng khi quên tăng số phiên bản) */
+    syncMode();
+    const r=await askSW(reg.active,{type:'update'},20000);
+    if(!r.ok)toast('Mạng yếu, chưa cập nhật được. Thử lại sau nhé');
+    else if(r.changed){toast('Đã cập nhật, đang mở lại…');setTimeout(()=>location.reload(),700)}
+    else toast('Bạn đang dùng bản mới nhất')
+  }catch(e){toast('Không cập nhật được. Kiểm tra mạng rồi thử lại')}
+  finally{updating=false}}
 /* Khởi động */
 load();document.body.classList.toggle('reduce-motion',D.cfg.reduce);go('habits');
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
-if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js');
+if('serviceWorker' in navigator){
+  /* updateViaCache:'none' → luôn kiểm tra sw.js mới trực tiếp (không dùng bản tạm của trình duyệt). Lỗi mạng chỉ im lặng, không ảnh hưởng giao diện. */
+  navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(()=>{});
+  /* Lần đầu cài xong: báo để người dùng biết từ giờ mở không cần mạng */
+  syncMode();
+  navigator.serviceWorker.ready.then(()=>{try{if(!localStorage.getItem('tq_offline_ok')){localStorage.setItem('tq_offline_ok','1');toast('Đã sẵn sàng dùng không cần mạng')}}catch(e){}}).catch(()=>{})}
 
 document.addEventListener('input',e=>{if(/^f-l\d$/.test(e.target.id))updateXp()});
 /* Tên thói quen tối đa 5 chữ (tính theo từ cách nhau bởi dấu cách) */
