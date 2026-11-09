@@ -494,9 +494,6 @@ input[type=date]{width:100%;min-height:48px;padding:10px 14px;border:1.5px solid
 #f-desc{width:100%;resize:vertical;min-height:72px;field-sizing:content}
 
 /* Trừ điểm khi bỏ lỡ (Quản lý + form) */
-.mg-pen{display:flex;align-items:center;gap:12px;margin:6px 0 10px;padding:10px 12px;border-radius:12px;background:#fbf4ff}
-.mg-pen .grow{font-size:.88rem;font-weight:600;color:var(--ink2);line-height:1.3}
-.mg-pen .grow small{display:block;font-weight:500;font-size:.78rem;opacity:.85;margin-top:2px}
 .pen-row{display:flex;align-items:center;gap:12px;margin-top:12px}
 .pen-row .grow{font-weight:600;line-height:1.3}
 .pen-row .grow small{display:block;font-weight:500;font-size:.78rem;opacity:.8;margin-top:2px}

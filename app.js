@@ -68,7 +68,6 @@ document.addEventListener('click',e=>{const t=e.target,q=s=>t.closest(s);let m;
   else if(m=q('[data-del]')){const id=m.dataset.del;confirmBox('Xóa thói quen này và toàn bộ lịch sử của nó?',()=>{D.habits=D.habits.filter(h=>h.id!==id);D.log=D.log.filter(l=>l.h!==id);save();render()})}
   else if(m=q('[data-hdel]')){const l=removeLog(m.dataset.hdel);render();if(l)showUndo(()=>{D.log.push(l);save();render()})}
   else if(q('#undo')){if(undoFn)undoFn();undoFn=null;$('#undo').hidden=true}
-  else if(m=q('[data-pen]')){const x=D.habits.find(h=>h.id===m.dataset.pen);if(x){setPen(x,!x.penOn);save();render();toast(x.penOn?'Đã bật trừ điểm khi bỏ lỡ':'Đã tắt trừ điểm khi bỏ lỡ')}}
   else if(m=q('[data-fpen]')){const on=m.getAttribute('aria-checked')!=='true';m.setAttribute('aria-checked',on);const a=$('#f-pen-amt');if(a)a.style.display=on?'':'none'}
   else if(q('[data-online]')){toggleOnline()}
   else if(q('[data-update]')){doUpdate()}
@@ -79,8 +78,6 @@ document.addEventListener('change',e=>{const t=e.target;
   if(t.dataset.name!==undefined){D.cfg.names[+t.dataset.name]=t.value.trim()||D.cfg.names[+t.dataset.name];save()}
   else if(t.dataset.day!==undefined){D.cfg.dayStart=+t.value;save()}
   else if(t.dataset.import!==undefined&&t.files[0]){const r=new FileReader();r.onload=()=>{const err=importJSON(r.result);err?toast(err):(toast('Đã nhập dữ liệu'),render())};r.readAsText(t.files[0])}});
-/* Trừ điểm khi bỏ lỡ: bật/tắt cho một thói quen. Mới bật → chỉ tính từ hôm nay (không trừ ngược quá khứ). */
-function setPen(x,on){if(on&&!x.penOn)x.penFrom=dayKey();x.penOn=on}
 /* Sáng hôm sau: báo một lần những thói quen đã bị trừ điểm vì bỏ lỡ hôm qua */
 function penNotice(){try{const td=dayKey();if(localStorage.getItem('tq_penseen')===td)return;localStorage.setItem('tq_penseen',td)}catch(e){}
   const y=dayKey(Date.now()-864e5),xs=D.habits.filter(x=>!x.arch&&penDays(x).includes(y));
