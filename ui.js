@@ -48,7 +48,8 @@ function nameIc(x,fs){const p=Math.round(fs*24);return '<svg class="ic" style="w
 function rHabits(){const hs=D.habits.filter(h=>!h.arch),n=new Date(),nm=D.cfg.names;
   let h='<h1 class="h-date">'+DOW[n.getDay()]+', '+n.getDate()+' tháng '+(n.getMonth()+1)+'</h1>';
   if(!hs.length)h+='<div class="empty">Chưa có thói quen nào.<br>Vào tab Quản lý để thêm thói quen đầu tiên.</div>';
-  for(const x of hs){const s=stat(x),u=x.unit?' '+esc(x.unit):'',len=String(s.today.v).length,sub=s.full?'Đủ hôm nay':(x.goal>0?'Mục tiêu '+x.goal+u:''),fs=nameFs(x.name);
+  for(const x of hs){let s=stat(x),u=x.unit?' '+esc(x.unit):'',len=String(s.today.v).length,sub=s.full?'Đủ hôm nay':(x.goal>0?'Mục tiêu '+x.goal+u:''),fs=nameFs(x.name);
+    if(s.pen>0)sub+=(sub?' · ':'')+'bỏ lỡ −'+s.pen+'đ';
     /* Cấu trúc: [huy hiệu 84px] + [cột nội dung cao đúng 84px: hàng trên = tên + số lần, hàng dưới = thanh lên cấp] → mép trên/dưới luôn thẳng hàng */
     h+='<article class="habit'+(s.full?' is-full':'')+'" data-lv="'+s.lv+'" data-id="'+x.id+'" style="'+lvStyle(s.lv-1)+'">'+
     '<div class="badge">'+badge(s.lv)+bspan(nm[s.lv-1])+'</div>'+
@@ -77,9 +78,10 @@ const MODE={log:'1 điểm / lần',day:'1 điểm / ngày đạt mục tiêu',a
 function rManage(){const act=D.habits.filter(x=>!x.arch),arc=D.habits.filter(x=>x.arch),nm=D.cfg.names;
   let h='<h1 class="h-date">Quản lý</h1><p class="h-sub">'+act.length+' thói quen đang theo dõi</p><button class="btn btn-primary" data-new style="width:100%;margin:14px 0">'+ic('ui-plus')+' Thêm thói quen</button>';
   act.forEach((x,i)=>{const s=stat(x),c=lvCol(s.lv-1),fg=s.lv>=8?'#331400':'#fff',first=i===0,last=i===act.length-1;
-    h+='<div class="mg"><div class="mg-top"><span class="mg-ic" style="background:linear-gradient(135deg,'+c[0]+','+c[1]+')!important;color:'+fg+'!important">'+ic(x.icon,'l')+'</span><div class="grow"><div class="t">'+esc(x.name)+'</div><div class="n">'+esc(nm[s.lv-1])+(s.stars?' '+'★'.repeat(s.stars):'')+'</div><div class="n">'+s.pts+' điểm</div></div></div>'+
+    h+='<div class="mg"><div class="mg-top"><span class="mg-ic" style="background:linear-gradient(135deg,'+c[0]+','+c[1]+')!important;color:'+fg+'!important">'+ic(x.icon,'l')+'</span><div class="grow"><div class="t">'+esc(x.name)+'</div><div class="n">'+esc(nm[s.lv-1])+(s.stars?' '+'★'.repeat(s.stars):'')+'</div><div class="n">'+s.pts+' điểm'+(s.pen>0?' (đã trừ '+s.pen+' vì bỏ lỡ)':'')+'</div></div></div>'+
     /* Hàng sắp xếp riêng, nút lớn, mờ đi khi đã ở đầu/cuối danh sách */
     '<div class="mg-mv"><button data-move="'+x.id+'|top"'+(first?' disabled':'')+'>'+ic('ui-top','s')+' Lên đầu</button><button data-move="'+x.id+'|-1"'+(first?' disabled':'')+'>'+ic('ui-up','s')+' Lên</button><button data-move="'+x.id+'|1"'+(last?' disabled':'')+'>'+ic('ui-down','s')+' Xuống</button></div>'+
+    '<div class="mg-pen"><div class="grow">Trừ điểm nếu bỏ lỡ một ngày<small>'+(x.penOn?'Mỗi ngày không ghi nhận lần nào: −'+penN(x)+' điểm (tính từ '+(x.penFrom||dayKey()).slice(8)+'/'+(x.penFrom||dayKey()).slice(5,7)+')':'Đang tắt')+'</small></div><button type="button" class="switch" role="switch" aria-checked="'+!!x.penOn+'" data-pen="'+x.id+'" aria-label="Trừ điểm khi bỏ lỡ"></button></div>'+
     '<div class="mg-btns"><button data-adj="'+x.id+'|'+dayKey()+'">'+ic('ui-settings','s')+' Điều chỉnh</button><button data-edit="'+x.id+'">'+ic('ui-edit','s')+' Sửa</button><button data-arch="'+x.id+'">'+ic('ui-archive','s')+' Lưu trữ</button><button class="btn-danger" data-del="'+x.id+'">'+ic('ui-trash','s')+' Xóa</button></div></div>'});
   if(!act.length)h+='<div class="empty">Chưa có thói quen nào. Bấm "Thêm thói quen" để bắt đầu.</div>';
   if(arc.length){h+='<div class="day-head">Đã lưu trữ</div><div class="group">';
@@ -91,7 +93,8 @@ let histOpen={},statDay=null,descOpen={};
 /* Lịch sử: mỗi ngày gom theo thói quen, hiện tổng số lần nhấn; bấm vào để xem từng lần */
 function rHistory(){let h='<h1 class="h-date">Lịch sử</h1>';const L=D.log.slice().sort((a,b)=>b.t-a.t),by={};
   for(const l of L){const k=dayKey(l.t);by[k]=by[k]||{};(by[k][l.h]=by[k][l.h]||[]).push(l)}
-  const ks=Object.keys(by);if(!ks.length)h+='<div class="empty">Chưa có ghi nhận nào</div>';
+  const pb={};for(const x of D.habits)for(const k of penDays(x))(pb[k]=pb[k]||[]).push(x);
+  const ks=[...new Set([...Object.keys(by),...Object.keys(pb)])].sort().reverse();if(!ks.length)h+='<div class="empty">Chưa có ghi nhận nào</div>';
   for(const k of ks){h+='<div class="day-head">'+dLab(k)+'</div><div class="group">';
     for(const id in by[k]){const x=D.habits.find(y=>y.id===id);if(!x)continue;const ls=by[k][id],key=k+'|'+id,open=!!histOpen[key],u=esc(unitOf(x));
       const cnt=Math.max(0,ls.reduce((a,l)=>a+(l.c!==undefined?l.c:1),0)),tot=Math.max(0,ls.reduce((a,l)=>a+l.v,0)),pp=ls.reduce((a,l)=>a+(l.p||0),0),adj=ls.some(l=>l.adj),sub=[];
@@ -103,6 +106,7 @@ function rHistory(){let h='<h1 class="h-date">Lịch sử</h1>';const L=D.log.sl
         return '<div class="row entry"><div class="grow n">'+tm+'</div><b>+'+l.v+' '+u+'</b>'+del+'</div>'}).join('')+
         '<div class="row"><button class="btn" data-adj="'+id+'|'+k+'" style="width:100%">'+ic('ui-settings','s')+' Điều chỉnh ngày này</button></div></div>';
       h+='</div>'}
+    (pb[k]||[]).forEach(x=>h+='<div class="row">'+ic(x.icon)+'<div class="grow"><div class="t">'+esc(x.name)+'</div><div class="n">Bỏ lỡ cả ngày</div></div><b style="color:#c0262d">−'+penN(x)+' điểm</b></div>');
     h+='</div>'}
   return h}
 /* Sheet điều chỉnh: sửa số lần/lượng hoặc điểm, đặt thành số mới hoặc cộng/trừ, kèm lý do */
@@ -165,7 +169,9 @@ function formHtml(x){const isNew=!x;x=x||{name:'',icon:'h-star',kind:'count',uni
   num('f-goal','Mục tiêu mỗi ngày',x.goal,0,'Nhập 0 = không đặt mục tiêu (làm 1 lần là xong, không giới hạn số lượng)')+'</div>'+
   '<div class="fcard"><h3 class="fsec">Cách tính điểm</h3>'+seg('mode',[['log','Mỗi lần'],['day','Mỗi ngày'],['amount','Theo lượng']],x.mode)+
   '<small class="hint">Mỗi lần: 1 lần ghi nhận = 1 điểm. Mỗi ngày: đạt mục tiêu = 1 điểm. Theo lượng: điểm bằng tổng lượng.</small>'+
-  '<div style="margin-top:12px">'+num('f-limit','Điểm tối đa mỗi ngày',x.limit,0,'Nhập 0 = không giới hạn')+'</div></div>'+
+  '<div style="margin-top:12px">'+num('f-limit','Điểm tối đa mỗi ngày',x.limit,0,'Nhập 0 = không giới hạn')+'</div>'+
+  '<div class="pen-row"><div class="grow">Trừ điểm nếu bỏ lỡ một ngày<small>Ngày nào không ghi nhận được lần nào thì bị trừ điểm (tính từ khi bật, chưa tính hôm nay)</small></div><button type="button" class="switch" role="switch" aria-checked="'+!!x.penOn+'" data-fpen aria-label="Trừ điểm khi bỏ lỡ"></button></div>'+
+  '<div class="pen-amt" id="f-pen-amt" style="'+(x.penOn?'':'display:none')+'">'+num('f-pen','Điểm trừ mỗi ngày bỏ lỡ',penN(x),1,'')+'</div></div>'+
   '<details class="fcard xpd"><summary><span>Điểm cần thăng cấp</span><small>'+esc(nm[0])+' → '+esc(nm[11])+'</small>'+ic('ui-down','s')+'</summary>'+
   '<div class="qf"><div class="field"><label for="f-fb">Cấp đầu</label><input type="text" inputmode="numeric" pattern="[0-9]*" id="f-fb" min="1" value="'+L[0]+'"></div><div class="field"><label for="f-fi">Mỗi cấp thêm</label><input type="text" inputmode="numeric" pattern="[0-9]*" id="f-fi" min="0" value="'+Math.max(0,L[1]-L[0])+'"></div><button type="button" class="btn" data-fill>Điền nhanh</button></div>'+
   L.map((v,i)=>'<div class="lr2"><label for="f-l'+i+'">'+(i<11?esc(nm[i])+' → '+esc(nm[i+1]):'Mỗi ★ sau '+esc(nm[11]))+'</label><input class="lvin" type="text" inputmode="numeric" pattern="[0-9]*" id="f-l'+i+'" min="1" value="'+v+'"></div>').join('')+

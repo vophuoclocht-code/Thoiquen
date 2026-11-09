@@ -23,10 +23,23 @@ const lvsOf=h=>{const L=h.lvs;if(L&&L.length===12)return L;
   if(L&&L.length===4){const d=Math.max(0,L[2]-L[1]);return Array.from({length:12},(_,i)=>i<3?L[i]:i===11?L[3]:L[2]+(i-2)*d)}
   const b=h.th||10,d=h.inc||0;return Array.from({length:12},(_,i)=>b+i*d)};
 const need=(h,k)=>Math.max(1,lvsOf(h)[Math.min(k,11)]); /* điểm cần cho bước thứ k */
-function stat(h){const m=perDay(h),k=dayKey();let pts=0;for(const d in m)pts+=dayPts(h,m[d]);
+/* ===== Trừ điểm khi bỏ lỡ =====
+   Thói quen bật penOn: mỗi ngày (từ penFrom đến HÔM QUA) không ghi nhận được lần nào thì bị trừ penN điểm.
+   Hôm nay chưa tính (còn cả ngày để làm). Điểm tính theo thứ tự thời gian và không xuống dưới 0.
+   Vẫn là dữ liệu suy ra từ nhật ký: tắt công tắc là hết trừ, điểm tính lại ngay. */
+const penN=h=>Math.max(1,Math.floor(h.penN)||1);
+function daysFrom(a,b){const o=[];if(!a||a>b)return o;const[y,m,d]=a.split('-').map(Number),t=new Date(y,m-1,d,12);
+  for(let i=0;i<4000;i++){const k=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');if(k>b)break;o.push(k);t.setDate(t.getDate()+1)}return o}
+function penDays(h,m){if(!h.penOn||!h.penFrom)return[];m=m||perDay(h);
+  const end=h.arch?(h.penEnd||h.penFrom):dayKey(); /* thói quen đang lưu trữ thì không bị trừ thêm */
+  return daysFrom(h.penFrom,end).filter(k=>k<end&&!(m[k]&&m[k].n>=1))}
+function stat(h){const m=perDay(h),k=dayKey(),pd=penDays(h,m);let pts=0,pen=0;
+  if(!pd.length){for(const d in m)pts+=dayPts(h,m[d])}
+  else{const ps=new Set(pd),pn=penN(h);
+    for(const d of [...new Set([...Object.keys(m),...pd])].sort()){const g=dayPts(h,m[d]),nx=Math.max(0,pts+g-(ps.has(d)?pn:0));pen+=pts+g-nx;pts=nx}}
   let steps=0,rem=pts;while(steps<999&&rem>=need(h,steps)){rem-=need(h,steps);steps++}
   const t=m[k]||{n:0,v:0},tp=dayPts(h,t);
-  return{pts,th:need(h,steps),lv:Math.min(12,steps+1),stars:Math.max(0,steps-11),into:rem,today:t,todayPts:tp,full:h.limit>0&&dayPts(h,{n:t.n,v:t.v})>=h.limit}}
+  return{pts,pen,missed:pd.length,th:need(h,steps),lv:Math.min(12,steps+1),stars:Math.max(0,steps-11),into:rem,today:t,todayPts:tp,full:h.limit>0&&dayPts(h,{n:t.n,v:t.v})>=h.limit}}
 const prog=h=>Math.min(1,stat(h).today.v/goalOf(h));
 function addLog(h,v){if(stat(h).full)return null;const l={id:uid(),h:h.id,t:Date.now(),v};D.log.push(l);save();return l}
 function removeLog(id){const i=D.log.findIndex(l=>l.id===id);if(i<0)return null;const l=D.log.splice(i,1)[0];save();return l}

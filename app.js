@@ -23,20 +23,18 @@ function doAdd(id){const h=D.habits.find(x=>x.id===id);if(!h)return;const b=stat
   if(!l){toast('Đã đủ hôm nay');return}vib(15);const a=stat(h);render();const c=document.querySelector('.habit[data-id="'+id+'"]');if(c){const p=document.createElement('i');p.className='pop';p.textContent='+'+l.v;c.appendChild(p);setTimeout(()=>p.remove(),700)}showUndo(()=>{removeLog(l.id);render()});if(a.lv>b.lv)queueFx(id,b.lv,a.lv)}
 function doMinus(id){const h=D.habits.find(x=>x.id===id),l=h&&lastToday(h);if(!l){toast('Hôm nay chưa có gì để trừ');return}removeLog(l.id);vib(15);render();showUndo(()=>{D.log.push(l);save();render()})}
 /* Mở/đóng mô tả: khung được KÉO XUỐNG từ đáy thẻ, bấm lần nữa thì KÉO LÊN chui vào sau thẻ.
-   Chiều cao vùng chứa và độ trượt của khung chạy cùng một nhịp (cùng thời lượng, cùng đường cong) → mép dưới khung luôn khớp mép dưới vùng chứa,
-   các thẻ bên dưới dịch xuống/lên đúng bằng phần khung đã lộ ra. Bấm giữa chừng thì đảo chiều mượt từ vị trí hiện tại. */
+   Chỉ animate MỘT thuộc tính (chiều cao vùng chứa); khung dính đáy vùng chứa bằng CSS (flex-end) nên đáy/cạnh khung luôn hiện đủ.
+   Bấm giữa chừng thì đảo chiều mượt từ chiều cao hiện tại. */
 function toggleDesc(btn){const id=btn.dataset.info,o=descOpen[id]=!descOpen[id],d=document.querySelector('[data-desc="'+id+'"]');
   btn.classList.toggle('is-open',o);btn.setAttribute('aria-expanded',o);if(!d)return;
   const inn=d.querySelector('.h-desc-in'),box=d.querySelector('.h-desc-box'),
     still=D.cfg.reduce||matchMedia('(prefers-reduced-motion:reduce)').matches||!inn.animate,
     from=inn.getBoundingClientRect().height; /* đo TRƯỚC khi đổi trạng thái (kể cả đang chạy dở) */
-  inn.getAnimations().forEach(a=>a.cancel());box.getAnimations().forEach(a=>a.cancel());
+  inn.getAnimations().forEach(a=>a.cancel());
   d.classList.toggle('is-open',o);
   if(still)return;
-  const H=box.offsetHeight,tuck=parseFloat(getComputedStyle(d).getPropertyValue('--tuck'))||14,to=o?H:tuck,
-    opt={duration:320,easing:'cubic-bezier(.3,.7,.2,1)'};
-  inn.animate([{height:from+'px'},{height:to+'px'}],opt);
-  box.animate([{transform:'translateY('+(from-H)+'px)'},{transform:'translateY('+(to-H)+'px)'}],opt)}
+  const tuck=parseFloat(getComputedStyle(d).getPropertyValue('--tuck'))||14,to=o?box.offsetHeight:tuck;
+  inn.animate([{height:from+'px'},{height:to+'px'}],{duration:320,easing:'cubic-bezier(.3,.7,.2,1)'})}
 /* Chạm khung = cộng. Giữ 0,55 giây = trừ. Kéo/cuộn quá 10px thì hủy */
 let pt=null,dId=null,sx=0,sy=0,moved=false,longHit=false;
 document.addEventListener('pointerdown',e=>{if(e.target.closest('.h-info'))return;const c=e.target.closest('.habit');if(!c)return;dId=c.dataset.id;sx=e.clientX;sy=e.clientY;moved=false;longHit=false;
@@ -62,13 +60,16 @@ document.addEventListener('click',e=>{const t=e.target,q=s=>t.closest(s);let m;
   else if(m=q('[data-save]')){const name=cut5($('#f-name').value.replace(/\s+/g,' ').trim()),n=(id,d)=>{const v=Math.floor(+$('#'+id).value);return isNaN(v)||v<0?d:v},sg=k=>document.querySelector('.seg[data-seg="'+k+'"] .is-on').dataset.v;
     if(!name){toast('Hãy nhập tên thói quen');return}
     const lvs=Array.from({length:12},(_,i)=>Math.max(1,n('f-l'+i,10))),kind=sg('kind');
-    const o={name,icon:selIcon,kind,unit:$('#f-unit').value.trim(),desc:$('#f-desc').value.trim(),step:kind==='count'?1:Math.max(1,n('f-step',1)),goal:n('f-goal',1),mode:sg('mode'),limit:n('f-limit',0),lvs,th:lvs[0]};
-    const x=D.habits.find(h=>h.id===m.dataset.save);if(x)Object.assign(x,o);else D.habits.push(Object.assign({id:uid()},o));save();closeSheet();render()}
+    const o={name,icon:selIcon,kind,unit:$('#f-unit').value.trim(),desc:$('#f-desc').value.trim(),step:kind==='count'?1:Math.max(1,n('f-step',1)),goal:n('f-goal',1),mode:sg('mode'),limit:n('f-limit',0),lvs,th:lvs[0],penOn:document.querySelector('[data-fpen]').getAttribute('aria-checked')==='true',penN:Math.max(1,n('f-pen',1))};
+    const x=D.habits.find(h=>h.id===m.dataset.save);if(o.penOn&&!(x&&x.penOn))o.penFrom=dayKey(); /* mới bật → chỉ tính từ hôm nay, không trừ ngược quá khứ */
+    if(x)Object.assign(x,o);else D.habits.push(Object.assign({id:uid()},o));save();closeSheet();render()}
   else if(m=q('[data-move]')){const p=m.dataset.move.split('|');moveHabit(p[0],p[1]);render()}
-  else if(m=q('[data-arch]')){const x=D.habits.find(h=>h.id===m.dataset.arch);x.arch=!x.arch;save();render();toast(x.arch?'Đã lưu trữ':'Đã khôi phục')}
+  else if(m=q('[data-arch]')){const x=D.habits.find(h=>h.id===m.dataset.arch);x.arch=!x.arch;if(x.arch)x.penEnd=dayKey();else{x.penFrom=dayKey();delete x.penEnd}save();render();toast(x.arch?'Đã lưu trữ':'Đã khôi phục')}
   else if(m=q('[data-del]')){const id=m.dataset.del;confirmBox('Xóa thói quen này và toàn bộ lịch sử của nó?',()=>{D.habits=D.habits.filter(h=>h.id!==id);D.log=D.log.filter(l=>l.h!==id);save();render()})}
   else if(m=q('[data-hdel]')){const l=removeLog(m.dataset.hdel);render();if(l)showUndo(()=>{D.log.push(l);save();render()})}
   else if(q('#undo')){if(undoFn)undoFn();undoFn=null;$('#undo').hidden=true}
+  else if(m=q('[data-pen]')){const x=D.habits.find(h=>h.id===m.dataset.pen);if(x){setPen(x,!x.penOn);save();render();toast(x.penOn?'Đã bật trừ điểm khi bỏ lỡ':'Đã tắt trừ điểm khi bỏ lỡ')}}
+  else if(m=q('[data-fpen]')){const on=m.getAttribute('aria-checked')!=='true';m.setAttribute('aria-checked',on);const a=$('#f-pen-amt');if(a)a.style.display=on?'':'none'}
   else if(q('[data-online]')){toggleOnline()}
   else if(q('[data-update]')){doUpdate()}
   else if(m=q('[data-sw]')){const k=m.dataset.sw;D.cfg[k]=!D.cfg[k];save();document.body.classList.toggle('reduce-motion',D.cfg.reduce);render()}
@@ -78,6 +79,12 @@ document.addEventListener('change',e=>{const t=e.target;
   if(t.dataset.name!==undefined){D.cfg.names[+t.dataset.name]=t.value.trim()||D.cfg.names[+t.dataset.name];save()}
   else if(t.dataset.day!==undefined){D.cfg.dayStart=+t.value;save()}
   else if(t.dataset.import!==undefined&&t.files[0]){const r=new FileReader();r.onload=()=>{const err=importJSON(r.result);err?toast(err):(toast('Đã nhập dữ liệu'),render())};r.readAsText(t.files[0])}});
+/* Trừ điểm khi bỏ lỡ: bật/tắt cho một thói quen. Mới bật → chỉ tính từ hôm nay (không trừ ngược quá khứ). */
+function setPen(x,on){if(on&&!x.penOn)x.penFrom=dayKey();x.penOn=on}
+/* Sáng hôm sau: báo một lần những thói quen đã bị trừ điểm vì bỏ lỡ hôm qua */
+function penNotice(){try{const td=dayKey();if(localStorage.getItem('tq_penseen')===td)return;localStorage.setItem('tq_penseen',td)}catch(e){}
+  const y=dayKey(Date.now()-864e5),xs=D.habits.filter(x=>!x.arch&&penDays(x).includes(y));
+  if(xs.length)toast('Hôm qua bỏ lỡ: '+xs.map(x=>x.name+' (−'+penN(x)+')').join(', '))}
 /* ===== Chế độ online / cập nhật =====
    Công tắc trong Cài đặt: BẬT → app báo service worker chuyển sang online và tự kiểm tra bản mới
    (có thì tải về rồi tự tải lại trang). TẮT → quay về offline hoàn toàn (mặc định). */
@@ -112,7 +119,7 @@ async function doUpdate(){
   }catch(e){toast('Không cập nhật được. Kiểm tra mạng rồi thử lại')}
   finally{updating=false}}
 /* Khởi động */
-load();document.body.classList.toggle('reduce-motion',D.cfg.reduce);go('habits');
+load();document.body.classList.toggle('reduce-motion',D.cfg.reduce);go('habits');penNotice();
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
 if('serviceWorker' in navigator){
   /* updateViaCache:'none' → luôn kiểm tra sw.js mới trực tiếp (không dùng bản tạm của trình duyệt). Lỗi mạng chỉ im lặng, không ảnh hưởng giao diện. */

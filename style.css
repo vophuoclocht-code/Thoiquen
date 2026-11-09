@@ -472,26 +472,32 @@ input[type=date]{width:100%;min-height:48px;padding:10px 14px;border:1.5px solid
 .h-info.is-open .h-chev{transform:rotate(180deg)}
 .h-info:active .h-tab{filter:brightness(1.06)}
 
-/* Ngăn kéo mô tả. Hình học (không phụ thuộc trình duyệt tự nội suy):
-   - Đỉnh vùng chứa luôn nằm CHÌM 14px sau đáy thẻ (thẻ có z-index cao hơn nên che phần này).
-   - Khi ĐÓNG, vùng chứa cao đúng 14px (toàn bộ nằm sau thẻ) và khung bị đẩy lên hết → không thấy gì.
-   - Khi MỞ, JS (toggleDesc trong app.js) cho chiều cao vùng chứa và độ trượt của khung chạy CÙNG nhịp:
-     mép dưới của khung luôn trùng mép dưới vùng chứa = khung được kéo xuống từ đáy thẻ, các thẻ bên dưới đi theo đúng nhịp.
-   - Đóng lại thì chạy ngược: khung kéo lên, chui vào sau thẻ. */
+/* Ngăn kéo mô tả. Chỉ MỘT thứ chuyển động là chiều cao vùng chứa; khung luôn bị "dính" vào đáy vùng chứa
+   (flex-end) nên mép dưới + 2 cạnh bên + bo góc của khung lúc nào cũng hiện đủ, không thể lệch nhịp.
+   - Đỉnh vùng chứa luôn nằm CHÌM 14px sau đáy thẻ (thẻ có z-index cao hơn nên che phần đó) → khung chui ra từ dưới thẻ.
+   - ĐÓNG: vùng chứa cao đúng 14px (nằm hẳn sau thẻ) và ẩn. MỞ: cao bằng khung (JS toggleDesc cho chạy mượt từ cao hiện tại).
+   - Đóng lại thì chạy ngược: mép dưới khung kéo ngược lên, chui vào sau thẻ. */
 .h-desc{--dur:.32s;--ease:cubic-bezier(.3,.7,.2,1);--tuck:14px;
   --tf:color-mix(in srgb,var(--c0) 84%,var(--c1));--tb:color-mix(in srgb,var(--gl) 80%,var(--c0));
   position:relative;margin:calc(-1*(var(--s3) + var(--tuck))) 14px var(--s3)}
-.h-desc-in{height:var(--tuck);overflow:hidden;visibility:hidden;transition:visibility 0s linear var(--dur)}
+.h-desc-in{display:flex;flex-direction:column;justify-content:flex-end;height:var(--tuck);overflow:hidden;visibility:hidden;transition:visibility 0s linear var(--dur)}
 .h-desc.is-open .h-desc-in{height:auto;visibility:visible;transition-delay:0s}
-.h-desc-box{position:relative;box-sizing:border-box;padding:calc(var(--tuck) + 26px) 16px 16px;border-radius:0 0 22px 22px;white-space:pre-wrap;overflow-wrap:anywhere;
+.h-desc-box{flex:none;position:relative;box-sizing:border-box;padding:calc(var(--tuck) + 26px) 16px 16px;border-radius:0 0 22px 22px;white-space:pre-wrap;overflow-wrap:anywhere;
   font-size:.98rem;font-weight:600;line-height:1.5;color:#2a1a3d;
   background:linear-gradient(135deg,color-mix(in srgb,var(--gl) 20%,#fff),#fff);
-  border:1.5px solid color-mix(in srgb,var(--gl) 80%,transparent);border-top:0;
-  transform:translateY(calc(var(--tuck) - 100%))}
-.h-desc.is-open .h-desc-box{transform:none}
+  border:1.5px solid color-mix(in srgb,var(--gl) 80%,transparent);border-top:0}
 /* bóng đổ nhẹ từ thẻ xuống khung → nhìn như khung gắn liền với thẻ */
 .h-desc-box::before{content:"";position:absolute;left:0;right:0;top:0;height:calc(var(--tuck) + 22px);pointer-events:none;
   background:linear-gradient(to bottom,color-mix(in srgb,var(--gl) 30%,transparent),transparent)}
 .reduce-motion .h-desc-in{transition:none}
 .reduce-motion .h-chev{transition:none}
 #f-desc{width:100%;resize:vertical;min-height:72px;field-sizing:content}
+
+/* Trừ điểm khi bỏ lỡ (Quản lý + form) */
+.mg-pen{display:flex;align-items:center;gap:12px;margin:6px 0 10px;padding:10px 12px;border-radius:12px;background:#fbf4ff}
+.mg-pen .grow{font-size:.88rem;font-weight:600;color:var(--ink2);line-height:1.3}
+.mg-pen .grow small{display:block;font-weight:500;font-size:.78rem;opacity:.85;margin-top:2px}
+.pen-row{display:flex;align-items:center;gap:12px;margin-top:12px}
+.pen-row .grow{font-weight:600;line-height:1.3}
+.pen-row .grow small{display:block;font-weight:500;font-size:.78rem;opacity:.8;margin-top:2px}
+.pen-amt{margin-top:10px}

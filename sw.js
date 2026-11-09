@@ -3,7 +3,7 @@
    - ONLINE (bật trong Cài đặt): ưu tiên lấy bản mới từ mạng (chờ tối đa 5 giây, mạng yếu thì dùng bản trong máy),
      đồng thời lưu lại để lần offline sau dùng bản mới.
    Cập nhật: bật công tắc Online là app tự kiểm tra + tải bản mới. (Tăng số phiên bản bên dưới vẫn có tác dụng, không bắt buộc nữa.) */
-const CACHE = 'thoiquen-v36';
+const CACHE = 'thoiquen-v37';
 const MODE_CACHE = 'thoiquen-mode';   // nhớ chế độ online/offline (SW không đọc được localStorage)
 const NET_TIMEOUT = 5000;
 
