@@ -49,7 +49,6 @@ function rHabits(){const hs=D.habits.filter(h=>!h.arch),n=new Date(),nm=D.cfg.na
   let h='<h1 class="h-date">'+DOW[n.getDay()]+', '+n.getDate()+' tháng '+(n.getMonth()+1)+'</h1>';
   if(!hs.length)h+='<div class="empty">Chưa có thói quen nào.<br>Vào tab Quản lý để thêm thói quen đầu tiên.</div>';
   for(const x of hs){let s=stat(x),u=x.unit?' '+esc(x.unit):'',len=String(s.today.v).length,sub=s.full?'Đủ hôm nay':(x.goal>0?'Mục tiêu '+x.goal+u:''),fs=nameFs(x.name);
-    if(s.pen>0)sub+=(sub?' · ':'')+'bỏ lỡ −'+s.pen+'đ';
     /* Cấu trúc: [huy hiệu 84px] + [cột nội dung cao đúng 84px: hàng trên = tên + số lần, hàng dưới = thanh lên cấp] → mép trên/dưới luôn thẳng hàng */
     h+='<article class="habit'+(s.full?' is-full':'')+'" data-lv="'+s.lv+'" data-id="'+x.id+'" style="'+lvStyle(s.lv-1)+'">'+
     '<div class="badge">'+badge(s.lv)+bspan(nm[s.lv-1])+'</div>'+
